@@ -3,6 +3,11 @@ import { readFile } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { APP_NAME, APP_VERSION } from './lib/meta.mjs'
+import {
+  loadPricingSnapshot,
+  pricingEvidence,
+  PricingCatalogService
+} from './lib/pricing-catalog.mjs'
 import { runBenchmark } from './lib/runner.mjs'
 
 const rootDir = fileURLToPath(new URL('..', import.meta.url))
@@ -10,6 +15,8 @@ const publicDir = join(rootDir, 'public')
 const port = Number(process.env.PORT) || 4312
 const host = '127.0.0.1'
 const maxRequestBytes = 1_000_000
+const pricingCatalog = new PricingCatalogService(await loadPricingSnapshot())
+const startupPricingSync = pricingCatalog.refresh()
 
 const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
@@ -78,6 +85,7 @@ async function serveStatic(requestPath, response) {
 
 async function streamBenchmark(request, response) {
   const input = await readJsonBody(request)
+  const evidence = pricingEvidence(pricingCatalog.current(), input.canonicalModel, input.pricing)
   const abortController = new AbortController()
   response.on('close', () => {
     if (!response.writableEnded) abortController.abort()
@@ -86,6 +94,7 @@ async function streamBenchmark(request, response) {
   try {
     const result = await runBenchmark(input, {
       signal: abortController.signal,
+      pricingEvidence: evidence,
       onProgress: (event) => writeNdjson(response, event)
     })
     writeNdjson(response, { type: 'result', result })
@@ -106,9 +115,15 @@ const server = createServer(async (request, response) => {
       sendJson(response, 200, { status: 'ok', name: APP_NAME, version: APP_VERSION })
       return
     }
+    if (request.method === 'GET' && url.pathname === '/api/model-pricing') {
+      await startupPricingSync
+      sendJson(response, 200, pricingCatalog.current())
+      return
+    }
     if (request.method === 'POST' && url.pathname === '/api/benchmark') {
       const input = await readJsonBody(request)
-      const result = await runBenchmark(input)
+      const evidence = pricingEvidence(pricingCatalog.current(), input.canonicalModel, input.pricing)
+      const result = await runBenchmark(input, { pricingEvidence: evidence })
       sendJson(response, 200, result)
       return
     }

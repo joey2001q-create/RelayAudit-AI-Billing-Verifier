@@ -36,7 +36,11 @@ test('双平台使用相同语义请求且只各执行一次', async () => {
     }), { status: 200, headers: { 'x-request-id': `header-${requests.length}` } })
   }
 
-  const result = await runBenchmark(input(2), { fetchImpl, testId: 'fixed-test' })
+  const result = await runBenchmark(input(2), {
+    fetchImpl,
+    testId: 'fixed-test',
+    pricingEvidence: { mode: 'remote', sha256: 'verified-price-hash', model: 'same-model' }
+  })
   assert.equal(requests.length, 4)
   assert.deepEqual(requests.map((item) => new URL(item.url).host), ['a.example', 'b.example', 'b.example', 'a.example'])
   assert.deepEqual(requests.map((item) => item.authorization), ['Bearer secret-a', 'Bearer secret-b', 'Bearer secret-b', 'Bearer secret-a'])
@@ -47,6 +51,7 @@ test('双平台使用相同语义请求且只各执行一次', async () => {
   assert.equal(result.rounds[1].calls[0].semanticRequestSha256, result.rounds[1].calls[1].semanticRequestSha256)
   assert.equal(result.readyForBalanceVerification, true)
   assert.equal(result.version, '0.1.0')
+  assert.equal(result.manifest.pricingSource.sha256, 'verified-price-hash')
   assert.equal(JSON.stringify(result).includes('secret-a'), false)
   assert.equal(result.providers[0].usage.inputTokens, 160)
   assert.equal(result.providers[0].usage.cachedInputTokens, 40)

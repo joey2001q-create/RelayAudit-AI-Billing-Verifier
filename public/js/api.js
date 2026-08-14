@@ -3,6 +3,14 @@ async function responseError(response) {
   return new Error(payload.message || `本机服务请求失败（HTTP ${response.status}）`)
 }
 
+export async function loadModelPricing() {
+  const response = await fetch('/api/model-pricing', {
+    headers: { Accept: 'application/json' }
+  })
+  if (!response.ok) throw await responseError(response)
+  return response.json()
+}
+
 export async function runBenchmark(payload, options = {}) {
   const response = await fetch('/api/benchmark/stream', {
     method: 'POST',

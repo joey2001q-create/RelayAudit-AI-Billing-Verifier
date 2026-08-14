@@ -22,8 +22,9 @@
   "scripts": {
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs",
+    "pricing:sync": "node scripts/sync-model-pricing.mjs",
     "test": "node --test",
-    "check": "node --check src/server.mjs && node --check src/lib/fixture.mjs && node --check src/lib/hash.mjs && node --check src/lib/meta.mjs && node --check src/lib/pricing.mjs && node --check src/lib/runner.mjs && node --check src/lib/usage.mjs && node --check src/lib/validation.mjs && node --check public/js/api.js && node --check public/js/app.js && node --check public/js/config-parser.js && node --check public/js/fixture-editor.js && node --check public/js/presets.js && node --check public/js/progress.js && node --check public/js/report.js && node --check public/js/verification.js"
+    "check": "node --check src/server.mjs && node --check src/lib/fixture.mjs && node --check src/lib/hash.mjs && node --check src/lib/meta.mjs && node --check src/lib/pricing.mjs && node --check src/lib/pricing-catalog.mjs && node --check src/lib/runner.mjs && node --check src/lib/usage.mjs && node --check src/lib/validation.mjs && node --check scripts/sync-model-pricing.mjs && node --check public/js/api.js && node --check public/js/app.js && node --check public/js/config-parser.js && node --check public/js/fixture-editor.js && node --check public/js/presets.js && node --check public/js/progress.js && node --check public/js/report.js && node --check public/js/verification.js"
   },
   "dependencies": {
     "lucide": "^0.468.0"

@@ -27,7 +27,7 @@
         <section class="band intro-band" aria-labelledby="config-title">
           <div class="section-heading">
             <div><span class="step">01</span><h2 id="config-title">统一测试配置</h2></div>
-            <span id="fixture-hint" class="muted">固定语料由本机服务生成</span>
+            <span id="pricing-source-status" class="pricing-source-status" data-state="loading">价格同步中…</span>
           </div>
           <div class="config-grid compact-config">
             <div class="mode-field">
@@ -62,10 +62,10 @@
                 <label>最大输出 Token<input id="max-output-tokens" type="number" min="8" max="128" value="16" required /><small>这是输出上限，不保证恰好输出指定数量</small></label>
               </div>
               <div class="pricing-grid" aria-label="每百万 Token 标称价格">
-                <label>普通输入 / M<input id="price-input" type="number" min="0" step="0.001" value="5" required /></label>
-                <label>缓存读取 / M<input id="price-cached" type="number" min="0" step="0.001" value="0.5" required /></label>
-                <label>缓存创建 / M<input id="price-cache-create" type="number" min="0" step="0.001" value="6.25" required /></label>
-                <label>输出 / M<input id="price-output" type="number" min="0" step="0.001" value="30" required /></label>
+                <label>普通输入 / M<input id="price-input" type="number" min="0" step="0.001" required /></label>
+                <label>缓存读取 / M<input id="price-cached" type="number" min="0" step="0.001" required /></label>
+                <label>缓存创建 / M<input id="price-cache-create" type="number" min="0" step="0.001" required /></label>
+                <label>输出 / M<input id="price-output" type="number" min="0" step="0.001" required /></label>
               </div>
               <div class="fixture-customization">
                 <div class="fixture-customization-head">
@@ -104,7 +104,7 @@
             <strong>准备发送 3 次固定请求</strong>
             <span>输入内容固定，失败不会自动重试</span>
           </div>
-          <button id="run-button" class="primary-button" type="submit">
+          <button id="run-button" class="primary-button" type="submit" disabled>
             <i data-lucide="play"></i><span>运行计费测试</span>
           </button>
         </section>

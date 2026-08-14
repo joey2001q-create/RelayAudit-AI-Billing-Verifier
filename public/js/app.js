@@ -1,8 +1,8 @@
-import { runBenchmark } from './api.js'
+import { loadModelPricing, runBenchmark } from './api.js'
 import { parseProviderConfig } from './config-parser.js'
 import { setupFixtureEditor } from './fixture-editor.js'
 import { createProgressView } from './progress.js'
-import { MODEL_PRESETS } from './presets.js'
+import { applyPricingCatalog, MODEL_PRESETS } from './presets.js'
 import { buildHtmlReport, downloadFile } from './report.js'
 import { verifyProvider } from './verification.js'
 
@@ -219,12 +219,17 @@ function evidencePackage() {
 }
 
 function verificationSummary() {
+  const pricingSource = latestBenchmark.manifest.pricingSource
+  const pricingSourceText = pricingSource.mode === 'manual'
+    ? '用户手工设置'
+    : `${pricingSource.mode === 'remote' ? 'GitHub 已校验远程价格' : '项目内置价格快照'}（SHA-256 ${pricingSource.sha256}）`
   const lines = [
     'RelayAudit 计费核验摘要',
     `测试 ID：${latestBenchmark.testId}`,
     `Manifest SHA-256：${latestBenchmark.manifestSha256}`,
     `固定语料 SHA-256：${latestBenchmark.manifest.fixture.sha256}`,
     `测试语料：${latestBenchmark.manifest.fixture.source === 'custom' ? '自定义' : '内置'}，${latestBenchmark.manifest.fixture.lineCount} 行，${latestBenchmark.manifest.fixture.characterCount} 字符`,
+    `价格来源：${pricingSourceText}`,
     `测试轮数：${latestBenchmark.manifest.settings.rounds}`,
     ''
   ]
@@ -307,17 +312,8 @@ function setProviderMode(mode) {
   updateRunSummary()
 }
 
-document.getElementById('providers-grid').innerHTML = providerDefaults.map(providerTemplate).join('')
-window.lucide.createIcons()
-setProviderMode('single')
-setWorkflowStep(1)
-
-document.querySelectorAll('[data-provider-mode]').forEach((button) => button.addEventListener('click', () => {
-  setProviderMode(button.dataset.providerMode)
-}))
-
-document.getElementById('pricing-preset').addEventListener('change', (event) => {
-  const preset = MODEL_PRESETS[event.target.value]
+function applySelectedModelPricing(presetId) {
+  const preset = MODEL_PRESETS[presetId]
   if (!preset) {
     document.getElementById('pricing-details').open = true
     document.querySelectorAll('.provider-options').forEach((details) => { details.open = true })
@@ -325,10 +321,45 @@ document.getElementById('pricing-preset').addEventListener('change', (event) => 
   }
   document.getElementById('canonical-model').value = preset.model
   for (const provider of providerDefaults) document.getElementById(`${provider.id}-model`).value = preset.model
+  if (!Number.isFinite(preset.input)) return
   document.getElementById('price-input').value = preset.input
   document.getElementById('price-cached').value = preset.cached
   document.getElementById('price-cache-create').value = preset.cacheCreate
   document.getElementById('price-output').value = preset.output
+}
+
+async function syncModelPricing() {
+  const status = document.getElementById('pricing-source-status')
+  try {
+    const catalog = await loadModelPricing()
+    applyPricingCatalog(catalog)
+    applySelectedModelPricing(document.getElementById('pricing-preset').value)
+    const revision = catalog.source.sha256?.slice(0, 8) ?? '未知版本'
+    status.textContent = catalog.source.mode === 'remote'
+      ? `价格已同步 · ${revision}`
+      : `使用内置价格快照 · ${revision}`
+    status.title = `价格来源：${catalog.source.repository}`
+    status.dataset.state = catalog.source.mode
+    document.getElementById('run-button').disabled = false
+  } catch {
+    status.textContent = '价格加载失败'
+    status.title = '本机服务未能读取远程价格或内置快照'
+    status.dataset.state = 'error'
+  }
+}
+
+document.getElementById('providers-grid').innerHTML = providerDefaults.map(providerTemplate).join('')
+window.lucide.createIcons()
+setProviderMode('single')
+setWorkflowStep(1)
+void syncModelPricing()
+
+document.querySelectorAll('[data-provider-mode]').forEach((button) => button.addEventListener('click', () => {
+  setProviderMode(button.dataset.providerMode)
+}))
+
+document.getElementById('pricing-preset').addEventListener('change', (event) => {
+  applySelectedModelPricing(event.target.value)
 })
 
 document.querySelectorAll('[data-import-provider]').forEach((button) => button.addEventListener('click', () => {

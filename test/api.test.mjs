@@ -1,6 +1,21 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { runBenchmark } from '../public/js/api.js'
+import { loadModelPricing, runBenchmark } from '../public/js/api.js'
+
+test('前端 API 客户端读取动态价格目录', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    models: { 'gpt-5.6-sol': { input: 5 } },
+    source: { mode: 'remote', sha256: 'hash' }
+  }), { status: 200, headers: { 'content-type': 'application/json' } })
+  try {
+    const catalog = await loadModelPricing()
+    assert.equal(catalog.source.mode, 'remote')
+    assert.equal(catalog.models['gpt-5.6-sol'].input, 5)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
 
 test('前端 API 客户端消费进度流并返回最终结果', async () => {
   const originalFetch = globalThis.fetch

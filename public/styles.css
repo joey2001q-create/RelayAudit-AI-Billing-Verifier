@@ -59,6 +59,10 @@ main { width: min(1280px, calc(100% - 32px)); margin: 24px auto 56px; }
 h2 { margin: 0; font-size: 19px; line-height: 1.3; }
 h3 { margin: 0; font-size: 16px; }
 .muted { color: var(--muted); font-size: 13px; }
+.pricing-source-status { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.pricing-source-status[data-state="remote"] { color: var(--green); }
+.pricing-source-status[data-state="snapshot"] { color: var(--amber); }
+.pricing-source-status[data-state="error"] { color: var(--red); }
 .mono { font-family: "SFMono-Regular", Consolas, monospace; overflow-wrap: anywhere; }
 
 .config-grid { display: grid; grid-template-columns: 2fr 1.4fr 0.7fr 0.8fr; gap: 14px; }
@@ -239,7 +243,7 @@ td.hash { max-width: 230px; overflow: hidden; text-overflow: ellipsis; font-fami
   .workflow-step { min-width: 0; align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; }
   .workflow-step strong { max-width: 100%; font-size: 11px; line-height: 1.25; }
   .section-heading { align-items: flex-start; }
-  .section-heading > .muted { display: none; }
+  .section-heading > .muted, .pricing-source-status { display: none; }
   .config-grid, .pricing-grid, .provider-fields, .provider-advanced-grid, .advanced-settings-grid { grid-template-columns: 1fr; }
   .span-two { grid-column: auto; }
   .pricing-grid { grid-template-columns: 1fr 1fr; }

@@ -293,6 +293,7 @@ export async function runBenchmark(rawInput, options = {}) {
       sha256: fixture.sha256
     },
     pricing,
+    pricingSource: options.pricingEvidence ?? { mode: 'manual', model: input.canonicalModel },
     settings: manifestSettings,
     scenarios: scenarioDefinitions.map((scenario) => ({
       id: scenario.id,
