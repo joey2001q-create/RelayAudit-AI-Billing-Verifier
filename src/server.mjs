@@ -16,7 +16,7 @@ const port = Number(process.env.PORT) || 4312
 const host = '127.0.0.1'
 const maxRequestBytes = 1_000_000
 const pricingCatalog = new PricingCatalogService(await loadPricingSnapshot())
-const startupPricingSync = pricingCatalog.refresh()
+void pricingCatalog.refresh()
 
 const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
@@ -116,7 +116,7 @@ const server = createServer(async (request, response) => {
       return
     }
     if (request.method === 'GET' && url.pathname === '/api/model-pricing') {
-      await startupPricingSync
+      if (url.searchParams.get('refresh') === '1') await pricingCatalog.refresh()
       sendJson(response, 200, pricingCatalog.current())
       return
     }

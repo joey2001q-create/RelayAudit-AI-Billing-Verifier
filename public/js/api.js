@@ -3,8 +3,9 @@ async function responseError(response) {
   return new Error(payload.message || `本机服务请求失败（HTTP ${response.status}）`)
 }
 
-export async function loadModelPricing() {
-  const response = await fetch('/api/model-pricing', {
+export async function loadModelPricing(options = {}) {
+  const path = options.refresh ? '/api/model-pricing?refresh=1' : '/api/model-pricing'
+  const response = await fetch(path, {
     headers: { Accept: 'application/json' }
   })
   if (!response.ok) throw await responseError(response)

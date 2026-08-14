@@ -336,14 +336,32 @@ async function syncModelPricing() {
     const revision = catalog.source.sha256?.slice(0, 8) ?? '未知版本'
     status.textContent = catalog.source.mode === 'remote'
       ? `价格已同步 · ${revision}`
-      : `使用内置价格快照 · ${revision}`
+      : `价格快照可用 · ${revision} · 正在检查更新`
     status.title = `价格来源：${catalog.source.repository}`
     status.dataset.state = catalog.source.mode
     document.getElementById('run-button').disabled = false
+
+    if (catalog.source.mode === 'snapshot') {
+      const refreshed = await loadModelPricing({ refresh: true })
+      applyPricingCatalog(refreshed)
+      applySelectedModelPricing(document.getElementById('pricing-preset').value)
+      const refreshedRevision = refreshed.source.sha256?.slice(0, 8) ?? '未知版本'
+      status.textContent = refreshed.source.mode === 'remote'
+        ? `价格已同步 · ${refreshedRevision}`
+        : `使用内置价格快照 · ${refreshedRevision}`
+      status.title = `价格来源：${refreshed.source.repository}`
+      status.dataset.state = refreshed.source.mode
+    }
   } catch {
-    status.textContent = '价格加载失败'
-    status.title = '本机服务未能读取远程价格或内置快照'
-    status.dataset.state = 'error'
+    if (!document.getElementById('run-button').disabled) {
+      status.textContent = '远程更新失败 · 继续使用价格快照'
+      status.title = '远程价格不可用，当前测试仍可正常使用已校验快照'
+      status.dataset.state = 'snapshot'
+    } else {
+      status.textContent = '价格加载失败'
+      status.title = '本机服务未能读取远程价格或内置快照'
+      status.dataset.state = 'error'
+    }
   }
 }
 
