@@ -127,14 +127,13 @@ function resultTemplate(provider, verification, color) {
     <div class="result-head"><div><span class="provider-mark">${provider.id.toUpperCase()}</span><h3>${escapeHtml(provider.name)}</h3></div><span class="status-chip status-${provider.status}">${provider.successfulCalls}/${provider.requestedCalls} 成功</span></div>
     <div class="result-body">
       <div class="charge-entry">
-        <div class="charge-control"><label>平台账单金额<input class="reported-charge" data-provider-charge="${provider.id}" type="number" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label>倍率（默认 1）<input data-provider-multiplier="${provider.id}" type="number" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
-        <span class="charge-entry-note">账单金额使用消费明细中的高精度值；平台没有特殊倍率时保持 1</span>
+        <div class="charge-control"><label class="actual-charge-field"><span>实际消费</span><small>填写平台消费明细中的高精度金额</small><input class="reported-charge" data-provider-charge="${provider.id}" type="number" inputmode="decimal" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label class="multiplier-field">自定义倍率<small>默认 1，无特殊倍率不用修改</small><input data-provider-multiplier="${provider.id}" type="number" inputmode="decimal" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
       </div>
       <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
-      <div class="metric-primary">
-        <div class="metric"><span>平台账单金额</span><strong>${money(verification.actualDeduction)}</strong></div>
-        <div class="metric"><span>标称应扣金额</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
-        <div class="metric"><span>相对偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
+      <div class="metric-secondary">
+        <div class="metric"><span>标称基础费用</span><strong>${money(verification.standardCost)}</strong></div>
+        <div class="metric"><span>按倍率应扣</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
+        <div class="metric"><span>金额偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
         <div class="metric"><span>实测 / 标称倍率</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.effectiveMultiplier) ? `${verification.effectiveMultiplier.toFixed(4)}x` : '待核验'} / ${verification.advertisedMultiplier.toFixed(4)}x</strong></div>
       </div>
       <div class="usage-list">
@@ -160,8 +159,8 @@ function renderResults() {
   const allChargesReported = latestBenchmark.providers.every((provider) => reportedCharges.has(provider.id))
   document.getElementById('result-notice').textContent = latestBenchmark.readyForBalanceVerification
     ? allChargesReported
-      ? '核验完成：结论已根据平台账单金额与标称应扣金额生成。'
-      : '测试请求已完成：填写平台账单金额；倍率默认 1，可自行修改。'
+      ? '核验完成：结论已根据实际消费与按倍率应扣金额生成。'
+      : '测试请求已完成：填写实际消费；倍率默认 1，可自行修改。'
     : '部分请求失败：请展开技术证据查看失败记录。'
   document.getElementById('result-notice').classList.toggle('error', !latestBenchmark.readyForBalanceVerification)
   setWorkflowStep(latestBenchmark.readyForBalanceVerification ? (allChargesReported ? 4 : 3) : 2)
@@ -207,7 +206,7 @@ function evidencePackage() {
     version: 'relay-billing-verifier-evidence-v2',
     generatedAt: new Date().toISOString(),
     declaration: {
-      chargeSource: '客户输入的平台消费明细数值',
+      chargeSource: '客户输入的实际消费明细数值',
       multiplierSource: '默认 1，客户可自行调整',
       apiKeysIncluded: false,
       fixtureContentIncluded: false,
@@ -241,7 +240,7 @@ function verificationSummary() {
       `模型：${provider.model}`,
       `请求：${provider.successfulCalls}/${provider.requestedCalls} 成功`,
       `标称基础费用：${money(item.standardCost)}`,
-      `平台账单金额：${money(item.actualDeduction)}`,
+      `实际消费：${money(item.actualDeduction)}`,
       `实测倍率：${Number.isFinite(item.effectiveMultiplier) ? `${item.effectiveMultiplier.toFixed(4)}x` : '待填写平台账单金额'}`,
       `标称倍率：${item.advertisedMultiplier.toFixed(4)}x`,
       `缓存读取占比：${provider.usage.cacheReadMetricsReported ? `${((provider.usage.cachedInputTokens / Math.max(provider.usage.inputTokens + provider.usage.cachedInputTokens + provider.usage.cacheCreationTokens, 1)) * 100).toFixed(2)}%` : '上游未返回'}`,
