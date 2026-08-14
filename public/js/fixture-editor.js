@@ -13,13 +13,11 @@ export function setupFixtureEditor() {
   const textarea = document.getElementById('fixture-text')
   const lineCount = document.getElementById('fixture-lines')
   const stats = document.getElementById('fixture-stats')
-  const hint = document.getElementById('fixture-hint')
 
   const updateStats = () => {
     const content = textarea.value.trim()
     const lines = content ? content.split(/\r?\n/).length : 0
     stats.textContent = `${lines.toLocaleString()} 行 · ${content.length.toLocaleString()} 字符`
-    if (toggle.checked) hint.textContent = `自定义语料 · ${lines.toLocaleString()} 行`
   }
 
   const updateMode = () => {
@@ -31,17 +29,12 @@ export function setupFixtureEditor() {
     if (enabled) {
       updateStats()
       textarea.focus()
-    } else {
-      hint.textContent = `内置固定语料 · ${Number(lineCount.value).toLocaleString()} 行`
     }
     window.lucide.createIcons()
   }
 
   toggle.addEventListener('change', updateMode)
   textarea.addEventListener('input', updateStats)
-  lineCount.addEventListener('input', () => {
-    if (!toggle.checked) hint.textContent = `内置固定语料 · ${Number(lineCount.value || 0).toLocaleString()} 行`
-  })
   updateMode()
 
   return {
