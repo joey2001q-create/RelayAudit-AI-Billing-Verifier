@@ -229,6 +229,7 @@ function verificationSummary() {
     `固定语料 SHA-256：${latestBenchmark.manifest.fixture.sha256}`,
     `测试语料：${latestBenchmark.manifest.fixture.source === 'custom' ? '自定义' : '内置'}，${latestBenchmark.manifest.fixture.lineCount} 行，${latestBenchmark.manifest.fixture.characterCount} 字符`,
     `价格来源：${pricingSourceText}`,
+    `执行方式：${latestBenchmark.manifest.executionMode === 'hosted_vercel' ? 'Vercel 托管版' : '本地独立运行'}`,
     `测试轮数：${latestBenchmark.manifest.settings.rounds}`,
     ''
   ]
@@ -267,7 +268,7 @@ function showToast(message) {
 }
 
 function updateRunSummary() {
-  const rounds = Math.min(Math.max(numberValue('rounds') || 3, 1), 20)
+  const rounds = Math.min(Math.max(numberValue('rounds') || 3, 1), 5)
   const providerCount = providerMode === 'single' ? 1 : 2
   const scenarioCount = document.getElementById('test-suite').value === 'professional' ? 3 : 1
   const totalRequests = rounds * providerCount * scenarioCount
@@ -359,7 +360,7 @@ async function syncModelPricing() {
       status.dataset.state = 'snapshot'
     } else {
       status.textContent = '价格加载失败'
-      status.title = '本机服务未能读取远程价格或内置快照'
+      status.title = 'RelayAudit 服务未能读取远程价格或内置快照'
       status.dataset.state = 'error'
     }
   }

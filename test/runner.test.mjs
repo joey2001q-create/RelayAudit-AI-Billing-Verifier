@@ -52,9 +52,28 @@ test('双平台使用相同语义请求且只各执行一次', async () => {
   assert.equal(result.readyForBalanceVerification, true)
   assert.equal(result.version, '0.1.0')
   assert.equal(result.manifest.pricingSource.sha256, 'verified-price-hash')
+  assert.equal(result.manifest.executionMode, 'local')
   assert.equal(JSON.stringify(result).includes('secret-a'), false)
   assert.equal(result.providers[0].usage.inputTokens, 160)
   assert.equal(result.providers[0].usage.cachedInputTokens, 40)
+})
+
+test('Vercel 托管模式记录执行方式并允许公网 HTTPS 地址', async () => {
+  const hostedInput = input(1)
+  hostedInput.providers = [{
+    ...hostedInput.providers[0],
+    baseUrl: 'https://8.8.8.8/v1'
+  }]
+  const result = await runBenchmark(hostedInput, {
+    executionMode: 'hosted_vercel',
+    testId: 'hosted-test',
+    fetchImpl: async () => new Response(JSON.stringify({
+      choices: [{ message: { content: 'BILLING_TEST_OK' } }],
+      usage: { prompt_tokens: 100, completion_tokens: 4 }
+    }), { status: 200 })
+  })
+  assert.equal(result.manifest.executionMode, 'hosted_vercel')
+  assert.equal(result.readyForBalanceVerification, true)
 })
 
 test('失败请求被记录且不会自动重试', async () => {

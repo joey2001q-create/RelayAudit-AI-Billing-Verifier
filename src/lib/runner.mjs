@@ -7,6 +7,7 @@ import {
 } from './fixture.mjs'
 import { sha256 } from './hash.mjs'
 import { APP_VERSION, USER_AGENT } from './meta.mjs'
+import { assertHostedEndpoint } from './network-policy.mjs'
 import { calculateStandardCost, normalizePricing } from './pricing.mjs'
 import { extractOutputText, mergeUsage, normalizeUsage } from './usage.mjs'
 import { normalizeBenchmarkRequest } from './validation.mjs'
@@ -182,6 +183,9 @@ function summarizeProvider(provider, calls, pricing, scenarioDefinitions) {
 
 export async function runBenchmark(rawInput, options = {}) {
   const input = normalizeBenchmarkRequest(rawInput)
+  if (options.executionMode === 'hosted_vercel') {
+    await Promise.all(input.providers.map((provider) => assertHostedEndpoint(provider.endpoint)))
+  }
   const pricing = normalizePricing(input.pricing)
   const fetchImpl = options.fetchImpl ?? fetch
   const signal = options.signal
@@ -294,6 +298,7 @@ export async function runBenchmark(rawInput, options = {}) {
     },
     pricing,
     pricingSource: options.pricingEvidence ?? { mode: 'manual', model: input.canonicalModel },
+    executionMode: options.executionMode ?? 'local',
     settings: manifestSettings,
     scenarios: scenarioDefinitions.map((scenario) => ({
       id: scenario.id,

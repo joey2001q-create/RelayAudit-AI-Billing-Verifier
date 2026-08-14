@@ -51,7 +51,7 @@ export function normalizeBenchmarkRequest(input) {
     throw new Error('必须配置一个或两个中转站')
   }
   const providers = input.providers.map(normalizeProvider)
-  const rounds = Math.min(Math.max(Number(input?.settings?.rounds) || 3, 1), 20)
+  const rounds = Math.min(Math.max(Number(input?.settings?.rounds) || 3, 1), 5)
   const fixtureLines = Math.min(Math.max(Number(input?.settings?.fixtureLines) || 200, 20), 2000)
   const maxOutputTokens = Math.min(Math.max(Number(input?.settings?.maxOutputTokens) || 16, 8), 128)
   const testSuite = input?.settings?.testSuite === 'professional' ? 'professional' : 'standard'

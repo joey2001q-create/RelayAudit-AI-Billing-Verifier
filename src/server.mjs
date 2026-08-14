@@ -3,11 +3,8 @@ import { readFile } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { APP_NAME, APP_VERSION } from './lib/meta.mjs'
-import {
-  loadPricingSnapshot,
-  pricingEvidence,
-  PricingCatalogService
-} from './lib/pricing-catalog.mjs'
+import { pricingEvidence } from './lib/pricing-catalog.mjs'
+import { pricingCatalog } from './lib/pricing-runtime.mjs'
 import { runBenchmark } from './lib/runner.mjs'
 
 const rootDir = fileURLToPath(new URL('..', import.meta.url))
@@ -15,9 +12,6 @@ const publicDir = join(rootDir, 'public')
 const port = Number(process.env.PORT) || 4312
 const host = '127.0.0.1'
 const maxRequestBytes = 1_000_000
-const pricingCatalog = new PricingCatalogService(await loadPricingSnapshot())
-void pricingCatalog.refresh()
-
 const mimeTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
   ['.css', 'text/css; charset=utf-8'],
@@ -95,6 +89,7 @@ async function streamBenchmark(request, response) {
     const result = await runBenchmark(input, {
       signal: abortController.signal,
       pricingEvidence: evidence,
+      executionMode: 'local',
       onProgress: (event) => writeNdjson(response, event)
     })
     writeNdjson(response, { type: 'result', result })
@@ -123,7 +118,7 @@ const server = createServer(async (request, response) => {
     if (request.method === 'POST' && url.pathname === '/api/benchmark') {
       const input = await readJsonBody(request)
       const evidence = pricingEvidence(pricingCatalog.current(), input.canonicalModel, input.pricing)
-      const result = await runBenchmark(input, { pricingEvidence: evidence })
+      const result = await runBenchmark(input, { pricingEvidence: evidence, executionMode: 'local' })
       sendJson(response, 200, result)
       return
     }

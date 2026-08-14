@@ -13,7 +13,7 @@
         <p class="eyebrow">RelayAudit</p>
         <h1>AI 中转站计费核验器</h1>
       </div>
-      <div class="privacy-status"><i data-lucide="shield-check"></i><span>Key 不保存 · 数据不落盘</span></div>
+      <div class="privacy-status" title="托管版经 Vercel Function 转发；自部署版仅经过当前运行环境。两者均不保存 API Key，也不把 Key 写入报告"><i data-lucide="shield-check"></i><span>Key 仅用于本次测试 · 不保存</span></div>
     </header>
 
     <main>
@@ -57,7 +57,7 @@
             <div class="advanced-content">
               <div class="advanced-settings-grid">
                 <label>语义模型标识<input id="canonical-model" name="canonicalModel" value="gpt-5.6-sol" required /></label>
-                <label>测试轮数<input id="rounds" type="number" min="1" max="20" value="3" required /></label>
+                <label>测试轮数<input id="rounds" type="number" min="1" max="5" value="3" required /></label>
                 <label>固定语料行数<input id="fixture-lines" type="number" min="20" max="2000" value="200" required /></label>
                 <label>最大输出 Token<input id="max-output-tokens" type="number" min="8" max="128" value="16" required /><small>这是输出上限，不保证恰好输出指定数量</small></label>
               </div>

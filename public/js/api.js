@@ -1,6 +1,6 @@
 async function responseError(response) {
   const payload = await response.json().catch(() => ({}))
-  return new Error(payload.message || `本机服务请求失败（HTTP ${response.status}）`)
+  return new Error(payload.message || `RelayAudit 服务请求失败（HTTP ${response.status}）`)
 }
 
 export async function loadModelPricing(options = {}) {
@@ -20,7 +20,7 @@ export async function runBenchmark(payload, options = {}) {
     signal: options.signal
   })
   if (!response.ok) throw await responseError(response)
-  if (!response.body) throw new Error('本机服务未返回可读取的进度流')
+  if (!response.body) throw new Error('RelayAudit 服务未返回可读取的进度流')
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -33,7 +33,7 @@ export async function runBenchmark(payload, options = {}) {
     try {
       event = JSON.parse(line)
     } catch {
-      throw new Error('本机服务返回了无效的进度数据')
+      throw new Error('RelayAudit 服务返回了无效的进度数据')
     }
     if (event.type === 'error') throw new Error(event.message || '计费测试失败')
     if (event.type === 'result') {
