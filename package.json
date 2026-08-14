@@ -7,11 +7,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joey2001q-create/llm-relay-audit.git"
+    "url": "https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier.git"
   },
-  "homepage": "https://github.com/joey2001q-create/llm-relay-audit#readme",
+  "homepage": "https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier#readme",
   "bugs": {
-    "url": "https://github.com/joey2001q-create/llm-relay-audit/issues"
+    "url": "https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier/issues"
   },
   "keywords": [
     "llm",

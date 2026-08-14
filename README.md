@@ -1,4 +1,4 @@
-# RelayAudit
+# RelayAudit - AI 中转站计费核验器
 
 RelayAudit 是一个本地运行的 AI 中转站计费核验器。它向一个或两个 OpenAI 兼容接口发送可复现的固定测试批次，根据接口返回的 `usage` 计算标称应扣金额，再与用户填写的平台账单金额进行核对。
 
@@ -31,8 +31,8 @@ RelayAudit 是一个本地运行的 AI 中转站计费核验器。它向一个�
 需要 Node.js 20 或更高版本。
 
 ```bash
-git clone https://github.com/joey2001q-create/llm-relay-audit.git
-cd llm-relay-audit
+git clone https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier.git
+cd RelayAudit-AI-Billing-Verifier
 npm ci
 npm start
 ```
