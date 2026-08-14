@@ -37,10 +37,12 @@
                 <button type="button" data-provider-mode="compare" aria-pressed="false">双平台对比</button>
               </div>
             </div>
-            <label>价格预设
+            <label>测试模型
               <select id="pricing-preset">
-                <option value="reference">参考价格（请核对）</option>
-                <option value="custom">自定义</option>
+                <option value="sol">gpt-5.6-sol</option>
+                <option value="terra">gpt-5.6-terra</option>
+                <option value="luna">gpt-5.6-luna</option>
+                <option value="custom">自定义模型</option>
               </select>
             </label>
             <label>测试方案
@@ -51,10 +53,10 @@
             </label>
           </div>
           <details id="pricing-details" class="advanced-details">
-            <summary><i data-lucide="sliders-horizontal"></i><span>高级设置</span><span class="advanced-caution">不了解计费规则请保持默认</span></summary>
+            <summary><i data-lucide="sliders-horizontal"></i><span>更多设置</span><span class="advanced-caution">通常无需修改</span></summary>
             <div class="advanced-content">
               <div class="advanced-settings-grid">
-                <label>语义模型标识<input id="canonical-model" name="canonicalModel" value="model-under-test" required /></label>
+                <label>语义模型标识<input id="canonical-model" name="canonicalModel" value="gpt-5.6-sol" required /></label>
                 <label>测试轮数<input id="rounds" type="number" min="1" max="20" value="3" required /></label>
                 <label>固定语料行数<input id="fixture-lines" type="number" min="20" max="2000" value="200" required /></label>
                 <label>最大输出 Token<input id="max-output-tokens" type="number" min="8" max="128" value="16" required /><small>这是输出上限，不保证恰好输出指定数量</small></label>

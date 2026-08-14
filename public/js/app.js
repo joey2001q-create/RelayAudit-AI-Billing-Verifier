@@ -2,11 +2,8 @@ import { runBenchmark } from './api.js'
 import { parseProviderConfig } from './config-parser.js'
 import { setupFixtureEditor } from './fixture-editor.js'
 import { createProgressView } from './progress.js'
+import { MODEL_PRESETS } from './presets.js'
 import { buildHtmlReport, downloadFile } from './report.js'
-
-const presets = {
-  reference: { input: 5, cached: 0.5, cacheCreate: 6.25, output: 30 }
-}
 
 const providerDefaults = [
   { id: 'a', label: 'A', name: '待测中转站 A', color: '#146c43' },
@@ -46,10 +43,10 @@ function providerTemplate(provider) {
         <label class="span-two key-wrap">API Key<input id="${provider.id}-key" type="password" autocomplete="off" placeholder="sk-..." required><button class="key-toggle" type="button" data-key-target="${provider.id}-key" title="显示或隐藏 API Key" aria-label="显示或隐藏 API Key"><i data-lucide="eye"></i></button></label>
       </div>
       <details class="advanced-details provider-options">
-        <summary><i data-lucide="settings-2"></i><span>平台高级设置</span></summary>
+        <summary><i data-lucide="settings-2"></i><span>平台更多设置</span></summary>
         <div class="advanced-content provider-advanced-grid">
           <label>平台名称<input id="${provider.id}-name" value="${provider.name}" required></label>
-          <label>模型别名<input id="${provider.id}-model" value="model-under-test" required></label>
+          <label>模型别名<input id="${provider.id}-model" value="gpt-5.6-sol" required></label>
           <label>标称倍率<input id="${provider.id}-multiplier" type="number" min="0" step="0.001" value="1" required></label>
         </div>
       </details>
@@ -355,11 +352,14 @@ document.querySelectorAll('[data-provider-mode]').forEach((button) => button.add
 }))
 
 document.getElementById('pricing-preset').addEventListener('change', (event) => {
-  const preset = presets[event.target.value]
+  const preset = MODEL_PRESETS[event.target.value]
   if (!preset) {
     document.getElementById('pricing-details').open = true
+    document.querySelectorAll('.provider-options').forEach((details) => { details.open = true })
     return
   }
+  document.getElementById('canonical-model').value = preset.model
+  for (const provider of providerDefaults) document.getElementById(`${provider.id}-model`).value = preset.model
   document.getElementById('price-input').value = preset.input
   document.getElementById('price-cached').value = preset.cached
   document.getElementById('price-cache-create').value = preset.cacheCreate
