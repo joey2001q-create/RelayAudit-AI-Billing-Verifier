@@ -1,19 +1,42 @@
-# RelayAudit - AI 中转站计费核验器
+<div align="center">
 
-RelayAudit 是一个开源的 AI 中转站计费核验器。它向一个或两个 OpenAI 兼容接口发送可复现的固定测试批次，根据接口返回的 `usage` 计算标称应扣金额，再与用户填写的平台账单金额进行核对。
+# RelayAudit
 
-> 当前为 `0.1.0` 首个公开预览版，只核验 Token 与价格，不测试速度。
+### AI 中转站计费核验器
 
-## 两种使用方式
+**用固定请求、公开价格与真实账单，核对中转站究竟扣了多少钱。**
 
-RelayAudit 同时提供两种入口，两者使用相同的测试语料、价格同步、usage 归一化和计费公式：
+不测速度，不猜测内部路由，只核验本次请求的 Token 与扣费是否对得上。
 
-- **Vercel 托管版**：打开网址即可测试，无需安装或部署。API Key 会临时经过 RelayAudit 的 Vercel Function 转发到用户填写的中转站，但不会持久化、写入日志或进入导出报告。
-- **源码自部署版**：克隆公开源码后在自己的电脑或服务器运行。API Key 只经过用户自己的浏览器、运行环境和目标中转站，适合独立复核或对凭据路径有更严格要求的场景。
+<p>
+  <a href="https://relay-billing-verifier.vercel.app"><img alt="Vercel 在线可用" src="https://img.shields.io/badge/Vercel-在线可用-000000?style=for-the-badge&amp;logo=vercel&amp;logoColor=white"></a>
+  <a href="https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier/actions/workflows/ci.yml"><img alt="持续集成" src="https://img.shields.io/github/actions/workflow/status/joey2001q-create/RelayAudit-AI-Billing-Verifier/ci.yml?style=for-the-badge&amp;label=持续集成"></a>
+  <a href="LICENSE"><img alt="MIT 许可证" src="https://img.shields.io/badge/License-MIT-146c43?style=for-the-badge"></a>
+  <img alt="Node.js 20 或更高版本" src="https://img.shields.io/badge/Node.js-%3E%3D20-339933?style=for-the-badge&amp;logo=node.js&amp;logoColor=white">
+</p>
 
-计费核验工具不能只要求用户相信工具提供者。公开源码允许客户或第三方检查固定语料、请求参数、计价公式和报告生成过程，并用相同配置重复实验。开源本身不代表结论天然正确，但能减少托管方注水、选择性展示或偏向特定平台的空间。报告仍然只代表本次测试样本，不构成对平台的绝对认证。
+<p>
+  <a href="https://relay-billing-verifier.vercel.app"><strong>在线体验</strong></a>
+  ·
+  <a href="#快速开始"><strong>快速部署</strong></a>
+  ·
+  <a href="#核验口径"><strong>核验原理</strong></a>
+  ·
+  <a href="#安全说明"><strong>安全边界</strong></a>
+</p>
 
-## 能做什么
+</div>
+
+> [!IMPORTANT]
+> 当前为 `0.1.0` 公开预览版，只核验 Token 与价格，不测试速度。报告代表本次测试样本，不构成对平台真实性的绝对认证。
+
+## 项目简介
+
+RelayAudit 会向一个或两个 OpenAI 兼容接口发送可复现的固定测试批次，读取接口返回的 `usage`，按照公开模型价格计算标称费用，再与用户填写的平台实际消费进行核对。
+
+整个项目公开源代码。任何人都可以检查测试语料、请求参数、usage 归一化、计价公式和报告生成过程，也可以在自己的环境中重复实验，减少选择性展示或偏向特定平台的空间。
+
+## 核心能力
 
 - 默认核验单个平台，也可对两个平台执行相同的语义请求。
 - 提供单轮稳定性、多轮上下文、缓存复用三个测试维度。
@@ -25,31 +48,45 @@ RelayAudit 同时提供两种入口，两者使用相同的测试语料、价格
 - 导出脱敏 JSON 证据、HTML 报告和文本摘要。
 - API Key 只用于当前页面发起的测试，不落盘、不进入报告。
 
-## 在线使用
+## 选择使用方式
 
-Vercel 托管版：<https://relay-billing-verifier.vercel.app>
+托管版与自部署版使用完全相同的测试语料、价格同步、usage 归一化和计费公式。
 
-托管版只允许测试可公开访问的 HTTPS 中转站地址；需要测试本机、局域网或 HTTP 地址时，请使用源码自部署版。
+| 使用方式 | 适合场景 | API Key 传输路径 | 入口 |
+| --- | --- | --- | --- |
+| **Vercel 托管版** | 打开即用，无需安装 | 浏览器 → RelayAudit Vercel Function → 目标中转站 | [立即在线测试](https://relay-billing-verifier.vercel.app) |
+| **源码自部署版** | 独立复核、内网接口、严格凭据控制 | 浏览器 → 用户自己的 RelayAudit 服务 → 目标中转站 | [查看公开源码](https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier) |
 
-## 自行部署
+> [!NOTE]
+> 托管版只允许访问公网 HTTPS 中转站。需要测试本机、局域网或 HTTP 地址时，请使用源码自部署版。
 
-需要 Node.js 20 或更高版本。
+## 快速开始
 
-[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoey2001q-create%2FRelayAudit-AI-Billing-Verifier)
+### 在线使用
+
+直接打开 **[RelayAudit 托管版](https://relay-billing-verifier.vercel.app)**，填写待测平台的 Base URL 和 API Key 即可开始。
+
+### 本地运行或部署到 Vercel
+
+需要 Node.js 20 或更高版本。克隆一次代码后，可以选择本地运行，也可以直接部署到自己的 Vercel 账号。
 
 ```bash
 git clone https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier.git
 cd RelayAudit-AI-Billing-Verifier
 npm ci
+
+# 方式一：在本机运行
 npm start
+
+# 方式二：部署到自己的 Vercel 账号
+npx vercel
 ```
 
-打开 <http://127.0.0.1:4312>。也可以把自己的仓库副本部署到 Vercel：
+本地运行后打开 <http://127.0.0.1:4312>。也可以点击下面的按钮，一键复制仓库并部署：
 
-```bash
-npm install -g vercel
-vercel
-```
+[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoey2001q-create%2FRelayAudit-AI-Billing-Verifier)
+
+## 使用流程
 
 两种版本均按以下顺序操作：
 
