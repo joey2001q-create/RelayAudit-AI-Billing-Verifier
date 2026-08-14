@@ -1,0 +1,24 @@
+name: 功能建议
+description: 建议新的核验能力或体验改进
+title: "[建议] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 用户问题
+      description: 请先描述谁在什么场景下遇到了什么问题。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案
+      description: 请说明建议行为、输入和输出。
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 核验口径影响
+      description: 该建议是否改变价格、Token、缓存或证据的定义？

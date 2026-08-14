@@ -1,0 +1,34 @@
+{
+  "name": "llm-relay-audit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RelayAudit：本地运行的 AI 中转站计费核验工具",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joey2001q-create/llm-relay-audit.git"
+  },
+  "homepage": "https://github.com/joey2001q-create/llm-relay-audit#readme",
+  "bugs": {
+    "url": "https://github.com/joey2001q-create/llm-relay-audit/issues"
+  },
+  "keywords": [
+    "llm",
+    "ai-gateway",
+    "billing",
+    "openai-compatible"
+  ],
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev": "node --watch src/server.mjs",
+    "test": "node --test",
+    "check": "node --check src/server.mjs && node --check src/lib/fixture.mjs && node --check src/lib/hash.mjs && node --check src/lib/meta.mjs && node --check src/lib/pricing.mjs && node --check src/lib/runner.mjs && node --check src/lib/usage.mjs && node --check src/lib/validation.mjs && node --check public/js/api.js && node --check public/js/app.js && node --check public/js/config-parser.js && node --check public/js/fixture-editor.js && node --check public/js/progress.js && node --check public/js/report.js"
+  },
+  "dependencies": {
+    "lucide": "^0.468.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
