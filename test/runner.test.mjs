@@ -13,8 +13,8 @@ function input(rounds = 2) {
     },
     settings: { rounds, fixtureLines: 20, maxOutputTokens: 16 },
     providers: [
-      { name: 'A', baseUrl: 'https://a.example/v1', apiKey: 'secret-a', model: 'alias-a', advertisedMultiplier: 0.8 },
-      { name: 'B', baseUrl: 'https://b.example/v1', apiKey: 'secret-b', model: 'alias-b', advertisedMultiplier: 1 }
+      { name: 'A', baseUrl: 'https://a.example/v1', apiKey: 'secret-a', model: 'alias-a' },
+      { name: 'B', baseUrl: 'https://b.example/v1', apiKey: 'secret-b', model: 'alias-b' }
     ]
   }
 }

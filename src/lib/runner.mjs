@@ -157,7 +157,6 @@ function summarizeProvider(provider, calls, pricing, scenarioDefinitions) {
     name: provider.name,
     endpoint: provider.endpoint,
     model: provider.model,
-    advertisedMultiplier: provider.advertisedMultiplier,
     status:
       successfulCalls.length === calls.length
         ? 'success'
@@ -170,7 +169,6 @@ function summarizeProvider(provider, calls, pricing, scenarioDefinitions) {
     compliantCalls: successfulCalls.filter((call) => call.outputCompliant).length,
     usage,
     costs,
-    advertisedExpectedCost: costs.standardCost * provider.advertisedMultiplier,
     scenarios: scenarioDefinitions.map((definition) =>
       summarizeScenario(
         definition,
@@ -305,8 +303,7 @@ export async function runBenchmark(rawInput, options = {}) {
       id: provider.id,
       name: provider.name,
       endpoint: provider.endpoint,
-      model: provider.model,
-      advertisedMultiplier: provider.advertisedMultiplier
+      model: provider.model
     }))
   }
 

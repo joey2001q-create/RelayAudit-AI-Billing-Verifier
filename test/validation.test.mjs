@@ -18,8 +18,7 @@ test('核验请求允许一个或两个平台', () => {
     name: '单平台',
     baseUrl: 'https://relay.example/v1',
     apiKey: 'secret',
-    model: 'model',
-    advertisedMultiplier: 1
+    model: 'model'
   }
   const base = {
     canonicalModel: 'model',

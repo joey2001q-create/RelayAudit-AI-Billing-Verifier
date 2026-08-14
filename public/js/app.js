@@ -4,6 +4,7 @@ import { setupFixtureEditor } from './fixture-editor.js'
 import { createProgressView } from './progress.js'
 import { MODEL_PRESETS } from './presets.js'
 import { buildHtmlReport, downloadFile } from './report.js'
+import { verifyProvider } from './verification.js'
 
 const providerDefaults = [
   { id: 'a', label: 'A', name: '待测中转站 A', color: '#146c43' },
@@ -15,6 +16,7 @@ let latestVerification = null
 let toastTimer
 let providerMode = 'single'
 const reportedCharges = new Map()
+const reportedMultipliers = new Map()
 const fixtureEditor = setupFixtureEditor()
 const progressView = createProgressView()
 
@@ -47,7 +49,6 @@ function providerTemplate(provider) {
         <div class="advanced-content provider-advanced-grid">
           <label>平台名称<input id="${provider.id}-name" value="${provider.name}" required></label>
           <label>模型别名<input id="${provider.id}-model" value="gpt-5.6-sol" required></label>
-          <label>标称倍率<input id="${provider.id}-multiplier" type="number" min="0" step="0.001" value="1" required></label>
         </div>
       </details>
     </div>
@@ -80,59 +81,8 @@ function formPayload() {
       name: document.getElementById(`${id}-name`).value,
       baseUrl: document.getElementById(`${id}-url`).value,
       apiKey: document.getElementById(`${id}-key`).value,
-      model: document.getElementById(`${id}-model`).value,
-      advertisedMultiplier: numberValue(`${id}-multiplier`)
+      model: document.getElementById(`${id}-model`).value
     }))
-  }
-}
-
-function verifyProvider(provider, reportedCharge) {
-  const hasReportedCharge = Number.isFinite(reportedCharge)
-  const actualDeduction = hasReportedCharge ? reportedCharge : null
-  const standardCost = provider.costs.standardCost
-  const effectiveMultiplier = hasReportedCharge && standardCost > 0 ? actualDeduction / standardCost : null
-  const expected = provider.advertisedExpectedCost
-  const difference = hasReportedCharge ? actualDeduction - expected : null
-  const differenceRate = hasReportedCharge && expected > 0 ? difference / expected : null
-  let conclusion = '等待账单金额'
-  let conclusionTone = 'pending'
-  let verdict = `请求已完成，标称应扣金额为 ${money(expected)}。`
-  if (provider.status !== 'success') {
-    conclusion = '请求未完整完成'
-    conclusionTone = 'failed'
-    verdict = '存在失败请求，本次数据不适合形成完整计费结论。'
-  } else if (hasReportedCharge && standardCost === 0) {
-    conclusion = '无法计算倍率'
-    conclusionTone = 'warning'
-    verdict = '上游 usage 未形成可计费金额。'
-  } else if (hasReportedCharge) {
-    const absoluteRate = Math.abs(differenceRate)
-    if (absoluteRate <= 0.02) {
-      conclusion = '与标称倍率一致'
-      conclusionTone = 'passed'
-    } else if (difference > 0) {
-      conclusion = '高于标称倍率'
-      conclusionTone = 'warning'
-    } else {
-      conclusion = '低于标称倍率'
-      conclusionTone = 'warning'
-    }
-    verdict = `平台账单金额与标称应扣金额偏差 ${Math.abs(difference).toFixed(6)}（${(absoluteRate * 100).toFixed(2)}%）。`
-  }
-  return {
-    id: provider.id,
-    name: provider.name,
-    reportedCharge: actualDeduction,
-    actualDeduction,
-    standardCost,
-    advertisedMultiplier: provider.advertisedMultiplier,
-    advertisedExpectedCost: expected,
-    effectiveMultiplier,
-    difference,
-    differenceRate,
-    conclusion,
-    conclusionTone,
-    verdict
   }
 }
 
@@ -177,8 +127,8 @@ function resultTemplate(provider, verification, color) {
     <div class="result-head"><div><span class="provider-mark">${provider.id.toUpperCase()}</span><h3>${escapeHtml(provider.name)}</h3></div><span class="status-chip status-${provider.status}">${provider.successfulCalls}/${provider.requestedCalls} 成功</span></div>
     <div class="result-body">
       <div class="charge-entry">
-        <div class="charge-control"><label>平台账单金额<input class="reported-charge" data-provider-charge="${provider.id}" type="number" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
-        <span class="charge-entry-note">使用消费明细中的高精度金额</span>
+        <div class="charge-control"><label>平台账单金额<input class="reported-charge" data-provider-charge="${provider.id}" type="number" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label>倍率（默认 1）<input data-provider-multiplier="${provider.id}" type="number" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
+        <span class="charge-entry-note">账单金额使用消费明细中的高精度值；平台没有特殊倍率时保持 1</span>
       </div>
       <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
       <div class="metric-primary">
@@ -198,7 +148,11 @@ function resultTemplate(provider, verification, color) {
 function renderResults() {
   latestVerification = {
     generatedAt: new Date().toISOString(),
-    providers: latestBenchmark.providers.map((provider) => verifyProvider(provider, reportedCharges.get(provider.id)))
+    providers: latestBenchmark.providers.map((provider) => verifyProvider(
+      provider,
+      reportedCharges.get(provider.id),
+      reportedMultipliers.get(provider.id) ?? 1
+    ))
   }
   document.getElementById('results-section').hidden = false
   document.getElementById('test-id').textContent = `测试 ID ${latestBenchmark.testId}`
@@ -207,7 +161,7 @@ function renderResults() {
   document.getElementById('result-notice').textContent = latestBenchmark.readyForBalanceVerification
     ? allChargesReported
       ? '核验完成：结论已根据平台账单金额与标称应扣金额生成。'
-      : '测试请求已完成：填写平台消费明细中的本次扣费后生成结论。'
+      : '测试请求已完成：填写平台账单金额；倍率默认 1，可自行修改。'
     : '部分请求失败：请展开技术证据查看失败记录。'
   document.getElementById('result-notice').classList.toggle('error', !latestBenchmark.readyForBalanceVerification)
   setWorkflowStep(latestBenchmark.readyForBalanceVerification ? (allChargesReported ? 4 : 3) : 2)
@@ -221,19 +175,28 @@ function renderResults() {
     const status = call.status === 'success' ? '成功' : `失败：${call.error}`
     return `<tr><td>${escapeHtml(round.scenarioName)}</td><td>${round.step}</td><td class="hash" title="${round.semanticRequestSha256}">${round.semanticRequestSha256}</td><td>${escapeHtml(call.providerName)}</td><td>${escapeHtml(status)}</td><td>${escapeHtml(call.requestId || '-')}</td><td>${usage?.inputTokens ?? '-'}</td><td>${usage?.cachedInputTokens ?? '-'}</td><td>${usage?.cacheCreationTokens ?? '-'}</td><td>${usage?.outputTokens ?? '-'}</td></tr>`
   })).join('')
-  function applyReportedCharge(input) {
-    const value = input.value === '' ? null : Number(input.value)
-    if (Number.isFinite(value) && value >= 0) reportedCharges.set(input.dataset.providerCharge, value)
-    else reportedCharges.delete(input.dataset.providerCharge)
+  function applyVerification(providerId) {
+    const chargeInput = document.querySelector(`[data-provider-charge="${providerId}"]`)
+    const multiplierInput = document.querySelector(`[data-provider-multiplier="${providerId}"]`)
+    const charge = chargeInput.value === '' ? null : Number(chargeInput.value)
+    const multiplier = Number(multiplierInput.value)
+    if (!Number.isFinite(multiplier) || multiplier <= 0) {
+      showToast('请输入有效倍率')
+      multiplierInput.focus()
+      return
+    }
+    if (Number.isFinite(charge) && charge >= 0) reportedCharges.set(providerId, charge)
+    else reportedCharges.delete(providerId)
+    reportedMultipliers.set(providerId, multiplier)
     renderResults()
   }
   document.querySelectorAll('[data-calculate-charge]').forEach((button) => button.addEventListener('click', () => {
-    applyReportedCharge(document.querySelector(`[data-provider-charge="${button.dataset.calculateCharge}"]`))
+    applyVerification(button.dataset.calculateCharge)
   }))
-  document.querySelectorAll('[data-provider-charge]').forEach((input) => input.addEventListener('keydown', (event) => {
+  document.querySelectorAll('[data-provider-charge], [data-provider-multiplier]').forEach((input) => input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault()
-      applyReportedCharge(input)
+      applyVerification(input.dataset.providerCharge ?? input.dataset.providerMultiplier)
     }
   }))
   window.lucide.createIcons()
@@ -245,6 +208,7 @@ function evidencePackage() {
     generatedAt: new Date().toISOString(),
     declaration: {
       chargeSource: '客户输入的平台消费明细数值',
+      multiplierSource: '默认 1，客户可自行调整',
       apiKeysIncluded: false,
       fixtureContentIncluded: false,
       automaticRetries: false
@@ -337,6 +301,7 @@ function setProviderMode(mode) {
   }
   if (changed) {
     reportedCharges.clear()
+    reportedMultipliers.clear()
     setWorkflowStep(1)
   }
   updateRunSummary()
@@ -403,6 +368,7 @@ document.getElementById('benchmark-form').addEventListener('submit', async (even
   window.lucide.createIcons()
   try {
     reportedCharges.clear()
+    reportedMultipliers.clear()
     latestBenchmark = await runBenchmark(formPayload(), { onProgress: progressView.handle })
     progressView.complete()
     renderResults()

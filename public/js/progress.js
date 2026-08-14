@@ -94,7 +94,7 @@ export function createProgressView() {
 
   const complete = () => {
     title.textContent = '测试执行完成'
-    current.textContent = '可以填写平台账单金额并查看结论'
+    current.textContent = '可以填写平台账单金额；倍率默认 1，可自行修改'
     updateTotal(totalRequests, totalRequests)
     setIcon(icon, 'circle-check', false)
   }

@@ -182,8 +182,8 @@ input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rg
 .status-partial { color: #7b4b00; background: #fff1d8; }
 .status-failed { color: #8e2424; background: #fee9e9; }
 .result-body { padding: 18px; }
-.charge-entry { display: grid; grid-template-columns: minmax(180px, 260px) 1fr; align-items: end; gap: 14px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.charge-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+.charge-entry { display: grid; gap: 7px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.charge-control { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) auto; align-items: end; gap: 8px; }
 .charge-entry-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .conclusion-banner { min-height: 62px; margin-bottom: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 11px; border-left: 3px solid var(--blue); color: #244d64; background: #edf7fc; }
 .conclusion-banner svg { width: 21px; height: 21px; flex: 0 0 auto; }
