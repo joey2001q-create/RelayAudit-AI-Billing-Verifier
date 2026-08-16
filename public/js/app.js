@@ -116,6 +116,7 @@ function resultTemplate(provider, verification, color) {
   const totalInputTokens = usage.inputTokens + usage.cachedInputTokens + usage.cacheCreationTokens
   const cacheReadShare = totalInputTokens > 0 ? (usage.cachedInputTokens / totalInputTokens) * 100 : 0
   const averageInput = provider.successfulCalls > 0 ? totalInputTokens / provider.successfulCalls : 0
+  const hasReportedCharge = Number.isFinite(verification.actualDeduction)
   const conclusionIcon = verification.conclusionTone === 'passed'
     ? 'badge-check'
     : verification.conclusionTone === 'failed'
@@ -123,31 +124,40 @@ function resultTemplate(provider, verification, color) {
       : verification.conclusionTone === 'warning'
         ? 'triangle-alert'
         : 'circle-dot'
+  const requestStatusIcon = provider.status === 'success' ? 'circle-check-big' : 'triangle-alert'
+  const requestStatusTitle = provider.status === 'success' ? '请求已完成' : '请求未完整完成'
+  const requestStatusDescription = provider.status === 'success'
+    ? '已按本次 Token 用量、公开价格和当前倍率完成计算'
+    : '以下金额仅基于成功请求，不建议作为完整计费结论'
+  const billingVerification = hasReportedCharge
+    ? `<section class="billing-verification" aria-label="账单核验结论">
+        <div class="billing-verification-heading"><span>账单核验结论</span><i data-lucide="clipboard-check"></i></div>
+        <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
+        <div class="metric-secondary">
+          <div class="metric"><span>实际消费</span><strong>${money(verification.actualDeduction)}</strong></div>
+          <div class="metric"><span>标称应扣金额</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
+          <div class="metric"><span>金额偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
+          <div class="metric"><span>实测 / 标称倍率</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.effectiveMultiplier) ? `${verification.effectiveMultiplier.toFixed(4)}x` : '待核验'} / ${verification.advertisedMultiplier.toFixed(4)}x</strong></div>
+        </div>
+      </section>`
+    : ''
   return `<article class="result-panel" style="--provider-color:${color}">
     <div class="result-head"><div><span class="provider-mark">${provider.id.toUpperCase()}</span><h3>${escapeHtml(provider.name)}</h3></div><span class="status-chip status-${provider.status}">${provider.successfulCalls}/${provider.requestedCalls} 成功</span></div>
     <div class="result-body">
-      <div class="result-layout">
-        <section class="result-data" aria-label="测试数据">
-          <div class="charge-entry">
-            <div class="charge-control"><label class="actual-charge-field"><span>实际消费</span><small>填写平台消费明细中的高精度金额</small><input class="reported-charge" data-provider-charge="${provider.id}" type="number" inputmode="decimal" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label class="multiplier-field">自定义倍率<small>默认 1，平台有其他倍率时自行修改</small><input data-provider-multiplier="${provider.id}" type="number" inputmode="decimal" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
-          </div>
-          <div class="usage-list">
-            <div><span>总输入 Token</span><b>${totalInputTokens.toLocaleString()}</b></div><div><span>输出 Token</span><b>${usage.outputTokens.toLocaleString()}</b></div><div><span>缓存读取占比</span><b>${usage.cacheReadMetricsReported ? `${cacheReadShare.toFixed(2)}%` : '未返回'}</b></div><div><span>平均输入 / 次</span><b>${Math.round(averageInput).toLocaleString()}</b></div>
-          </div>
-          ${scenarioAnalysisTemplate(provider)}
-        </section>
-        <aside class="conclusion-report" aria-label="结论报告">
-          <div class="conclusion-report-heading"><span>结论报告</span><i data-lucide="clipboard-check"></i></div>
-          <div class="report-spend"><span>实际消费</span><strong>${money(verification.actualDeduction)}</strong><small>平台消费明细金额</small></div>
-          <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
-          <div class="metric-secondary">
-            <div class="metric"><span>标称基础费用</span><strong>${money(verification.standardCost)}</strong></div>
-            <div class="metric"><span>按倍率应扣</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
-            <div class="metric"><span>金额偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
-            <div class="metric"><span>实测 / 标称倍率</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.effectiveMultiplier) ? `${verification.effectiveMultiplier.toFixed(4)}x` : '待核验'} / ${verification.advertisedMultiplier.toFixed(4)}x</strong></div>
-          </div>
-        </aside>
-      </div>
+      <section class="request-result-primary" aria-label="标称计费结果">
+        <div class="request-result-status"><i data-lucide="${requestStatusIcon}"></i><div><strong>${requestStatusTitle}</strong><span>${requestStatusDescription}</span></div></div>
+        <div class="request-result-cost"><span>标称应扣金额</span><strong>${money(verification.advertisedExpectedCost)}</strong><small>当前倍率 ${verification.advertisedMultiplier.toFixed(4)}x</small></div>
+      </section>
+      ${scenarioAnalysisTemplate(provider)}
+      <section class="usage-summary" aria-label="Token 汇总">
+        <h4>Token 汇总</h4>
+        <div class="usage-list"><div><span>总输入 Token</span><b>${totalInputTokens.toLocaleString()}</b></div><div><span>输出 Token</span><b>${usage.outputTokens.toLocaleString()}</b></div><div><span>缓存读取占比</span><b>${usage.cacheReadMetricsReported ? `${cacheReadShare.toFixed(2)}%` : '未返回'}</b></div><div><span>平均输入 / 次</span><b>${Math.round(averageInput).toLocaleString()}</b></div></div>
+      </section>
+      <section class="billing-check" aria-label="核对实际账单">
+        <div class="billing-check-heading"><div><strong>继续核对实际账单</strong><span>从平台消费明细取得本次测试金额后填写</span></div></div>
+        <div class="charge-control"><label class="actual-charge-field"><span>实际消费</span><input class="reported-charge" data-provider-charge="${provider.id}" type="number" inputmode="decimal" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label class="multiplier-field"><span>平台倍率</span><input data-provider-multiplier="${provider.id}" type="number" inputmode="decimal" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>核对账单</span></button></div>
+      </section>
+      ${billingVerification}
     </div>
   </article>`
 }
@@ -168,7 +178,7 @@ function renderResults() {
   document.getElementById('result-notice').textContent = latestBenchmark.readyForBalanceVerification
     ? allChargesReported
       ? '核验完成：结论已根据实际消费与按倍率应扣金额生成。'
-      : '测试请求已完成：填写实际消费；倍率默认 1，可自行修改。'
+      : '测试完成：以下为本次请求的标称计费结果。'
     : '部分请求失败：请展开技术证据查看失败记录。'
   document.getElementById('result-notice').classList.toggle('error', !latestBenchmark.readyForBalanceVerification)
   setWorkflowStep(latestBenchmark.readyForBalanceVerification ? (allChargesReported ? 4 : 3) : 2)
