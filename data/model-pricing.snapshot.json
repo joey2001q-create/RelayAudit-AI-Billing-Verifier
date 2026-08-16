@@ -4,8 +4,8 @@
     "repository": "https://github.com/Wei-Shaw/model-price-repo",
     "pricingUrl": "https://raw.githubusercontent.com/Wei-Shaw/model-price-repo/main/model_prices_and_context_window.json",
     "hashUrl": "https://raw.githubusercontent.com/Wei-Shaw/model-price-repo/main/model_prices_and_context_window.sha256",
-    "sha256": "59fb3a96bdff04ebc8656d346f06c1d33bb0344da20629d4eb87f691abfcbdb9",
-    "syncedAt": "2026-08-13T18:10:53.000Z"
+    "sha256": "ae8eb08c1524ebf82fb020a951a7d4a99d62d0c2c8b7d008f76b01bf261123c1",
+    "syncedAt": "2026-08-16T03:14:47.249Z"
   },
   "models": {
     "gpt-5.6-sol": {
