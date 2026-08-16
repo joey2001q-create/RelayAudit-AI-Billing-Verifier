@@ -10,7 +10,7 @@
 
 <p>
   <a href="https://relay-billing-verifier.vercel.app"><img alt="Vercel 在线可用" src="https://img.shields.io/badge/Vercel-在线可用-000000?style=for-the-badge&amp;logo=vercel&amp;logoColor=white"></a>
-  <a href="https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier/actions/workflows/ci.yml"><img alt="持续集成" src="https://img.shields.io/github/actions/workflow/status/joey2001q-create/RelayAudit-AI-Billing-Verifier/ci.yml?style=for-the-badge&amp;label=持续集成"></a>
+  <a href="https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier/actions/workflows/ci.yml"><img alt="持续集成" src="https://img.shields.io/github/actions/workflow/status/joey2001q-create/RelayAudit-AI-Billing-Verifier/ci.yml?branch=main&amp;style=for-the-badge&amp;label=%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90"></a>
   <a href="LICENSE"><img alt="MIT 许可证" src="https://img.shields.io/badge/License-MIT-146c43?style=for-the-badge"></a>
   <img alt="Node.js 20 或更高版本" src="https://img.shields.io/badge/Node.js-%3E%3D20-339933?style=for-the-badge&amp;logo=node.js&amp;logoColor=white">
 </p>
