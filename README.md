@@ -1,5 +1,15 @@
 <div align="center">
 
+<p>
+  <strong>简体中文</strong>
+  ·
+  <a href="README.en.md">English</a>
+  ·
+  <a href="README.es.md">Español</a>
+  ·
+  <a href="README.ja.md">日本語</a>
+</p>
+
 # RelayAudit
 
 ### AI 中转站计费核验器
