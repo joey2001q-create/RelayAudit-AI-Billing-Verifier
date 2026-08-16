@@ -53,7 +53,7 @@
             </label>
           </div>
           <details id="pricing-details" class="advanced-details">
-            <summary><i data-lucide="sliders-horizontal"></i><span>更多设置</span><span class="advanced-caution">通常无需修改</span></summary>
+            <summary><span class="summary-label"><i data-lucide="sliders-horizontal"></i><span>高级选项</span></span><i class="summary-chevron" data-lucide="chevron-down"></i></summary>
             <div class="advanced-content">
               <div class="advanced-settings-grid">
                 <label>语义模型标识<input id="canonical-model" name="canonicalModel" value="gpt-5.6-sol" required /></label>
@@ -69,7 +69,7 @@
               </div>
               <div class="fixture-customization">
                 <div class="fixture-customization-head">
-                  <div><strong>自定义测试语料</strong><span>默认使用内置固定语料，通常无需修改</span></div>
+                  <div><strong>自定义测试语料</strong><span>默认使用内置固定语料</span></div>
                   <label class="toggle-control" title="启用自定义测试语料">
                     <input id="custom-fixture-toggle" type="checkbox" />
                     <span class="toggle-track" aria-hidden="true"></span>
@@ -126,7 +126,7 @@
         <div id="result-notice" class="notice" role="status"></div>
         <div id="results-grid" class="results-grid"></div>
         <details class="evidence-block">
-          <summary class="evidence-title"><span class="evidence-summary-label"><i data-lucide="file-key-2"></i><strong>技术证据与执行记录</strong></span><span id="manifest-hash" class="mono muted"></span></summary>
+          <summary class="evidence-title"><span class="evidence-summary-label"><i data-lucide="file-key-2"></i><strong>技术证据与执行记录</strong></span><span class="evidence-summary-meta"><span id="manifest-hash" class="mono muted"></span><i class="summary-chevron" data-lucide="chevron-down"></i></span></summary>
           <div class="table-wrap">
             <table>
               <thead><tr><th>测试维度</th><th>步骤</th><th>语义请求 SHA-256</th><th>平台</th><th>状态</th><th>Request ID</th><th>普通输入</th><th>缓存读取</th><th>缓存创建</th><th>输出</th></tr></thead>

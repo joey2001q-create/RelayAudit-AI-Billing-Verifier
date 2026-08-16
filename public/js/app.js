@@ -34,7 +34,7 @@ function providerTemplate(provider) {
     <div class="provider-head"><div><span class="provider-mark">${provider.label}</span><h3>平台 ${provider.label}</h3></div><span class="muted">OpenAI 兼容接口</span></div>
     <div class="provider-body">
       <details class="advanced-details import-details">
-        <summary><i data-lucide="clipboard-paste"></i><span>从 cURL、JSON 或三行配置导入</span></summary>
+        <summary><span class="summary-label"><i data-lucide="clipboard-paste"></i><span>从 cURL、JSON 或三行配置导入</span></span><i class="summary-chevron" data-lucide="chevron-down"></i></summary>
         <div class="advanced-content import-content">
           <textarea id="${provider.id}-import" aria-label="平台 ${provider.label} 配置内容" autocomplete="off" spellcheck="false" placeholder="粘贴配置内容"></textarea>
           <button class="secondary-button import-action" type="button" data-import-provider="${provider.id}"><i data-lucide="wand-sparkles"></i><span>识别并填入</span></button>
@@ -45,7 +45,7 @@ function providerTemplate(provider) {
         <label class="span-two key-wrap">API Key<input id="${provider.id}-key" type="password" autocomplete="off" placeholder="sk-..." required><button class="key-toggle" type="button" data-key-target="${provider.id}-key" title="显示或隐藏 API Key" aria-label="显示或隐藏 API Key"><i data-lucide="eye"></i></button></label>
       </div>
       <details class="advanced-details provider-options">
-        <summary><i data-lucide="settings-2"></i><span>平台更多设置</span></summary>
+        <summary><span class="summary-label"><i data-lucide="settings-2"></i><span>平台高级选项</span></span><i class="summary-chevron" data-lucide="chevron-down"></i></summary>
         <div class="advanced-content provider-advanced-grid">
           <label>平台名称<input id="${provider.id}-name" value="${provider.name}" required></label>
           <label>模型别名<input id="${provider.id}-model" value="gpt-5.6-sol" required></label>
@@ -126,20 +126,28 @@ function resultTemplate(provider, verification, color) {
   return `<article class="result-panel" style="--provider-color:${color}">
     <div class="result-head"><div><span class="provider-mark">${provider.id.toUpperCase()}</span><h3>${escapeHtml(provider.name)}</h3></div><span class="status-chip status-${provider.status}">${provider.successfulCalls}/${provider.requestedCalls} 成功</span></div>
     <div class="result-body">
-      <div class="charge-entry">
-        <div class="charge-control"><label class="actual-charge-field"><span>实际消费</span><small>填写平台消费明细中的高精度金额</small><input class="reported-charge" data-provider-charge="${provider.id}" type="number" inputmode="decimal" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label class="multiplier-field">自定义倍率<small>默认 1，无特殊倍率不用修改</small><input data-provider-multiplier="${provider.id}" type="number" inputmode="decimal" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
+      <div class="result-layout">
+        <section class="result-data" aria-label="测试数据">
+          <div class="charge-entry">
+            <div class="charge-control"><label class="actual-charge-field"><span>实际消费</span><small>填写平台消费明细中的高精度金额</small><input class="reported-charge" data-provider-charge="${provider.id}" type="number" inputmode="decimal" min="0" step="any" value="${Number.isFinite(verification.reportedCharge) ? verification.reportedCharge : ''}" placeholder="例如 0.0532"></label><label class="multiplier-field">自定义倍率<small>默认 1，平台有其他倍率时自行修改</small><input data-provider-multiplier="${provider.id}" type="number" inputmode="decimal" min="0.001" step="0.001" value="${Number.isFinite(verification.advertisedMultiplier) ? verification.advertisedMultiplier : 1}"></label><button class="secondary-button" data-calculate-charge="${provider.id}" type="button"><i data-lucide="calculator"></i><span>生成结论</span></button></div>
+          </div>
+          <div class="usage-list">
+            <div><span>总输入 Token</span><b>${totalInputTokens.toLocaleString()}</b></div><div><span>输出 Token</span><b>${usage.outputTokens.toLocaleString()}</b></div><div><span>缓存读取占比</span><b>${usage.cacheReadMetricsReported ? `${cacheReadShare.toFixed(2)}%` : '未返回'}</b></div><div><span>平均输入 / 次</span><b>${Math.round(averageInput).toLocaleString()}</b></div>
+          </div>
+          ${scenarioAnalysisTemplate(provider)}
+        </section>
+        <aside class="conclusion-report" aria-label="结论报告">
+          <div class="conclusion-report-heading"><span>结论报告</span><i data-lucide="clipboard-check"></i></div>
+          <div class="report-spend"><span>实际消费</span><strong>${money(verification.actualDeduction)}</strong><small>平台消费明细金额</small></div>
+          <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
+          <div class="metric-secondary">
+            <div class="metric"><span>标称基础费用</span><strong>${money(verification.standardCost)}</strong></div>
+            <div class="metric"><span>按倍率应扣</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
+            <div class="metric"><span>金额偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
+            <div class="metric"><span>实测 / 标称倍率</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.effectiveMultiplier) ? `${verification.effectiveMultiplier.toFixed(4)}x` : '待核验'} / ${verification.advertisedMultiplier.toFixed(4)}x</strong></div>
+          </div>
+        </aside>
       </div>
-      <div class="conclusion-banner ${verification.conclusionTone}"><i data-lucide="${conclusionIcon}"></i><div><strong>${escapeHtml(verification.conclusion)}</strong><span>${escapeHtml(verification.verdict)}</span></div></div>
-      <div class="metric-secondary">
-        <div class="metric"><span>标称基础费用</span><strong>${money(verification.standardCost)}</strong></div>
-        <div class="metric"><span>按倍率应扣</span><strong>${money(verification.advertisedExpectedCost)}</strong></div>
-        <div class="metric"><span>金额偏差</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.differenceRate) ? `${verification.difference >= 0 ? '+' : '-'}${money(Math.abs(verification.difference))} / ${(Math.abs(verification.differenceRate) * 100).toFixed(2)}%` : '待核验'}</strong></div>
-        <div class="metric"><span>实测 / 标称倍率</span><strong class="${metricClass(verification)}">${Number.isFinite(verification.effectiveMultiplier) ? `${verification.effectiveMultiplier.toFixed(4)}x` : '待核验'} / ${verification.advertisedMultiplier.toFixed(4)}x</strong></div>
-      </div>
-      <div class="usage-list">
-        <div><span>总输入 Token</span><b>${totalInputTokens.toLocaleString()}</b></div><div><span>输出 Token</span><b>${usage.outputTokens.toLocaleString()}</b></div><div><span>缓存读取占比</span><b>${usage.cacheReadMetricsReported ? `${cacheReadShare.toFixed(2)}%` : '未返回'}</b></div><div><span>平均输入 / 次</span><b>${Math.round(averageInput).toLocaleString()}</b></div>
-      </div>
-      ${scenarioAnalysisTemplate(provider)}
     </div>
   </article>`
 }
