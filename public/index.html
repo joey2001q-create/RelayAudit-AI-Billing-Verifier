@@ -141,6 +141,14 @@
           <button id="print-report" class="icon-button" type="button" title="打印当前报告" aria-label="打印当前报告"><i data-lucide="printer"></i></button>
         </div>
       </section>
+
+      <section id="history-section" class="band history-band" aria-labelledby="history-title" hidden>
+        <div class="section-heading history-heading">
+          <div><i data-lucide="history"></i><h2 id="history-title">历史记录</h2><span id="history-count" class="muted"></span></div>
+          <button id="clear-history" class="icon-button" type="button" title="清空本机历史记录" aria-label="清空本机历史记录"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

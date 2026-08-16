@@ -60,6 +60,7 @@ Todo el proyecto es de código abierto. Cualquier persona puede revisar el corpu
 - Sincroniza los precios de los modelos 5.6 desde un repositorio público y verifica el archivo mediante SHA-256.
 - Normaliza campos `usage` habituales de estilo OpenAI y Anthropic.
 - Calcula el cargo de la plataforma, el cargo nominal esperado, la desviación relativa y el multiplicador medido.
+- Etiqueta cada conclusión con el modelo y la hora de finalización, y conserva en el navegador los últimos 20 resúmenes de prueba sin datos sensibles.
 - Exporta evidencia JSON sin datos sensibles, un informe HTML y un resumen de texto.
 - La API Key solo se utiliza durante la prueba actual; no se guarda ni aparece en los informes.
 
@@ -170,6 +171,7 @@ Por tanto, la conclusión del informe solo se aplica a los datos de facturación
 - No publiques el directorio `.vercel`, credenciales de Vercel ni Keys reales.
 - Antes de exportar un informe, comprueba que el nombre de la plataforma, el endpoint y la información empresarial sean aptos para su divulgación.
 - El texto del corpus personalizado no aparece en las respuestas ni en los informes exportados. El informe solo registra su origen, número de líneas, número de caracteres y SHA-256.
+- El historial del navegador solo guarda el modelo, la hora de finalización y el resumen de facturación. No guarda API Keys, URLs de endpoints ni el corpus de prueba, y puede borrarse desde la página.
 
 Consulta [SECURITY.md](SECURITY.md) para ver las instrucciones completas de notificación de vulnerabilidades.
 

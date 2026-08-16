@@ -1,6 +1,7 @@
 import { loadModelPricing, runBenchmark } from './api.js'
 import { parseProviderConfig } from './config-parser.js'
 import { setupFixtureEditor } from './fixture-editor.js'
+import { buildHistoryRecord, clearHistory, readHistory, saveHistoryRecord } from './history.js'
 import { createProgressView } from './progress.js'
 import { applyPricingCatalog, MODEL_PRESETS } from './presets.js'
 import { buildHtmlReport, downloadFile } from './report.js'
@@ -91,6 +92,20 @@ function money(value) {
   return value.toLocaleString('zh-CN', { minimumFractionDigits: 4, maximumFractionDigits: 6 })
 }
 
+function formatTestTime(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '时间未知'
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date)
+}
+
 function metricClass(item) {
   if (!Number.isFinite(item.differenceRate)) return ''
   if (Math.abs(item.differenceRate) <= 0.02) return 'good'
@@ -111,7 +126,7 @@ function scenarioAnalysisTemplate(provider) {
   return `<div class="scenario-analysis"><h4>分维度结果</h4><div class="table-wrap"><table class="scenario-table"><thead><tr><th>测试维度</th><th>请求</th><th>输入 Token</th><th>输出 Token</th><th>缓存读取占比</th><th>标称基础费用</th><th>输入增长</th></tr></thead><tbody>${rows}</tbody></table></div></div>`
 }
 
-function resultTemplate(provider, verification, color) {
+function resultTemplate(provider, verification, color, completedAt) {
   const usage = provider.usage
   const totalInputTokens = usage.inputTokens + usage.cachedInputTokens + usage.cacheCreationTokens
   const cacheReadShare = totalInputTokens > 0 ? (usage.cachedInputTokens / totalInputTokens) * 100 : 0
@@ -145,7 +160,7 @@ function resultTemplate(provider, verification, color) {
     <div class="result-head"><div><span class="provider-mark">${provider.id.toUpperCase()}</span><h3>${escapeHtml(provider.name)}</h3></div><span class="status-chip status-${provider.status}">${provider.successfulCalls}/${provider.requestedCalls} 成功</span></div>
     <div class="result-body">
       <section class="request-result-primary" aria-label="标称计费结果">
-        <div class="request-result-status"><i data-lucide="${requestStatusIcon}"></i><div><strong>${requestStatusTitle}</strong><span>${requestStatusDescription}</span></div></div>
+        <div class="request-result-status"><i data-lucide="${requestStatusIcon}"></i><div><strong>${requestStatusTitle}</strong><span>${requestStatusDescription}</span><span class="request-result-meta">模型：${escapeHtml(provider.model)} · 测试时间：<time datetime="${escapeHtml(completedAt)}">${formatTestTime(completedAt)}</time></span></div></div>
         <div class="request-result-cost"><span>标称应扣金额</span><strong>${money(verification.advertisedExpectedCost)}</strong><small>当前倍率 ${verification.advertisedMultiplier.toFixed(4)}x</small></div>
       </section>
       ${scenarioAnalysisTemplate(provider)}
@@ -160,6 +175,41 @@ function resultTemplate(provider, verification, color) {
       ${billingVerification}
     </div>
   </article>`
+}
+
+function historyTemplate(records) {
+  return records.map((record) => {
+    const allSuccessful = record.providers.every((provider) => provider.status === 'success')
+    const providerRows = record.providers.map((provider) => {
+      const cacheReadShare = Number.isFinite(provider.cacheReadShare)
+        ? `${(provider.cacheReadShare * 100).toFixed(2)}%`
+        : '未返回'
+      const billingOutcome = Number.isFinite(provider.actualDeduction)
+        ? `${money(provider.actualDeduction)} · ${escapeHtml(provider.conclusion ?? '已核对')}`
+        : '未填写实际消费'
+      return `<div class="history-provider-row">
+        <div class="history-provider-identity"><strong>${escapeHtml(provider.name)}</strong><span>模型：${escapeHtml(provider.model)}</span></div>
+        <div><span>标称应扣</span><strong>${money(provider.advertisedExpectedCost)}</strong></div>
+        <div><span>账单核验</span><strong>${billingOutcome}</strong></div>
+        <div><span>请求</span><strong>${provider.successfulCalls}/${provider.requestedCalls}</strong></div>
+        <div><span>输入 / 输出 Token</span><strong>${provider.totalInputTokens.toLocaleString()} / ${provider.outputTokens.toLocaleString()}</strong></div>
+        <div><span>缓存读取占比</span><strong>${cacheReadShare}</strong></div>
+      </div>`
+    }).join('')
+    return `<article class="history-item">
+      <div class="history-item-head"><div><time datetime="${escapeHtml(record.completedAt)}">${formatTestTime(record.completedAt)}</time><span>${record.providers.length === 1 ? '单平台测试' : '双平台测试'} · <span class="mono">${escapeHtml(record.testId)}</span></span></div><span class="status-chip ${allSuccessful ? 'status-success' : 'status-partial'}">${allSuccessful ? '请求完成' : '部分完成'}</span></div>
+      <div class="history-providers">${providerRows}</div>
+    </article>`
+  }).join('')
+}
+
+function renderHistory() {
+  const records = readHistory()
+  const section = document.getElementById('history-section')
+  section.hidden = records.length === 0
+  document.getElementById('history-count').textContent = records.length > 0 ? `最近 ${records.length} 次` : ''
+  document.getElementById('history-list').innerHTML = historyTemplate(records)
+  window.lucide.createIcons()
 }
 
 function renderResults() {
@@ -185,7 +235,7 @@ function renderResults() {
   const resultsGrid = document.getElementById('results-grid')
   resultsGrid.classList.toggle('single-mode', latestBenchmark.providers.length === 1)
   resultsGrid.innerHTML = latestBenchmark.providers.map((provider, index) =>
-    resultTemplate(provider, latestVerification.providers[index], providerDefaults[index].color)
+    resultTemplate(provider, latestVerification.providers[index], providerDefaults[index].color, latestBenchmark.completedAt)
   ).join('')
   document.getElementById('calls-body').innerHTML = latestBenchmark.rounds.flatMap((round) => round.calls.map((call) => {
     const usage = call.usage ?? null
@@ -216,6 +266,8 @@ function renderResults() {
       applyVerification(input.dataset.providerCharge ?? input.dataset.providerMultiplier)
     }
   }))
+  saveHistoryRecord(buildHistoryRecord(latestBenchmark, latestVerification))
+  renderHistory()
   window.lucide.createIcons()
 }
 
@@ -388,6 +440,7 @@ document.getElementById('providers-grid').innerHTML = providerDefaults.map(provi
 window.lucide.createIcons()
 setProviderMode('single')
 setWorkflowStep(1)
+renderHistory()
 void syncModelPricing()
 
 document.querySelectorAll('[data-provider-mode]').forEach((button) => button.addEventListener('click', () => {
@@ -466,3 +519,9 @@ document.getElementById('export-html').addEventListener('click', () => {
   downloadFile(`billing-report-${latestBenchmark.testId}.html`, buildHtmlReport(evidencePackage()), 'text/html')
 })
 document.getElementById('print-report').addEventListener('click', () => window.print())
+document.getElementById('clear-history').addEventListener('click', () => {
+  if (!window.confirm('确定清空当前浏览器中的全部测试历史吗？')) return
+  clearHistory()
+  renderHistory()
+  showToast('本机历史记录已清空')
+})

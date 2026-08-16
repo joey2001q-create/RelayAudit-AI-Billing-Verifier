@@ -60,6 +60,7 @@ The entire project is open source. Anyone can inspect the test corpus, request p
 - Synchronize 5.6 model prices from a public price repository and verify the file with SHA-256.
 - Normalize common OpenAI- and Anthropic-style `usage` fields.
 - Calculate the platform charge, nominal expected charge, relative deviation, and measured multiplier.
+- Label each billing conclusion with its model and completion time, and keep the latest 20 redacted test summaries in the current browser.
 - Export redacted JSON evidence, an HTML report, and a text summary.
 - Use the API Key only for the current test. It is not persisted or included in reports.
 
@@ -170,6 +171,7 @@ The report conclusion therefore applies only to the observable billing data from
 - Never commit the `.vercel` directory, Vercel credentials, or real Keys.
 - Before exporting a report, check that the platform name, endpoint, and business information are suitable for disclosure.
 - Custom corpus text is excluded from responses and exported reports. Reports record only its source, line count, character count, and SHA-256.
+- Browser history stores only the model, completion time, and billing summary. It never stores API Keys, endpoint URLs, or test corpus content, and can be cleared from the page.
 
 See [SECURITY.md](SECURITY.md) for complete vulnerability reporting instructions.
 
