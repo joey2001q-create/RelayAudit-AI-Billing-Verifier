@@ -4,8 +4,8 @@
     "repository": "https://github.com/Wei-Shaw/model-price-repo",
     "pricingUrl": "https://raw.githubusercontent.com/Wei-Shaw/model-price-repo/main/model_prices_and_context_window.json",
     "hashUrl": "https://raw.githubusercontent.com/Wei-Shaw/model-price-repo/main/model_prices_and_context_window.sha256",
-    "sha256": "1bff5bdf09727fd46dca79aacdbb65fc14d0f7f76c94cfd0493b7b0f9ea7e75a",
-    "syncedAt": "2026-08-23T03:17:49.147Z"
+    "sha256": "0a18345acb9b13fd482d7d48571419166e1028e4f9064e601d3d4fcbd6f33d86",
+    "syncedAt": "2026-08-27T08:30:00.000Z"
   },
   "models": {
     "gpt-5.6-sol": {
@@ -28,6 +28,62 @@
       "cached": 0.02,
       "cacheCreate": 0.25,
       "output": 1.2
+    },
+    "claude-sonnet-5": {
+      "model": "claude-sonnet-5",
+      "input": 2,
+      "cached": 0.2,
+      "cacheCreate": 2.5,
+      "output": 10
+    },
+    "claude-opus-4-8": {
+      "model": "claude-opus-4-8",
+      "input": 5,
+      "cached": 0.5,
+      "cacheCreate": 6.25,
+      "output": 25
+    },
+    "claude-haiku-4-5": {
+      "model": "claude-haiku-4-5",
+      "input": 1,
+      "cached": 0.1,
+      "cacheCreate": 1.25,
+      "output": 5
+    },
+    "claude-3-opus-20240229": {
+      "model": "claude-3-opus-20240229",
+      "input": 15,
+      "cached": 1.5,
+      "cacheCreate": 18.75,
+      "output": 75
+    },
+    "claude-3-haiku-20240307": {
+      "model": "claude-3-haiku-20240307",
+      "input": 0.25,
+      "cached": 0.03,
+      "cacheCreate": 0.3,
+      "output": 1.25
+    },
+    "gemini-2.5-pro": {
+      "model": "gemini-2.5-pro",
+      "input": 1.25,
+      "cached": 0.125,
+      "cacheCreate": 0,
+      "output": 10
+    },
+    "gemini-2.5-flash": {
+      "model": "gemini-2.5-flash",
+      "input": 0.3,
+      "cached": 0.03,
+      "cacheCreate": 0,
+      "output": 2.5
+    },
+    "gemini-2.0-flash": {
+      "model": "gemini-2.0-flash",
+      "input": 0.1,
+      "cached": 0.025,
+      "cacheCreate": 0,
+      "output": 0.4
     }
   }
 }

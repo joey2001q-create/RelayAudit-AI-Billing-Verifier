@@ -22,15 +22,14 @@ function remoteFixture() {
     'gpt-5.6-sol': remoteEntry(0.000005, 0.0000005, 0.00000625, 0.00003),
     'gpt-5.6-terra': remoteEntry(0.000002, 0.0000002, 0.0000025, 0.000012),
     'gpt-5.6-luna': remoteEntry(0.0000002, 0.00000002, 0.00000025, 0.0000012),
-    'claude-opus-4-8': remoteEntry(0.000015, 0.0000015, 0.00001875, 0.000075),
-    'claude-sonnet-5': remoteEntry(0.000003, 0.0000003, 0.00000375, 0.000015),
-    'claude-3-5-sonnet-20241022': remoteEntry(0.000003, 0.0000003, 0.00000375, 0.000015),
-    'claude-3-5-haiku-20241022': remoteEntry(0.0000008, 0.00000008, 0.000001, 0.000004),
+    'claude-sonnet-5': remoteEntry(0.000002, 0.0000002, 0.0000025, 0.00001),
+    'claude-opus-4-8': remoteEntry(0.000005, 0.0000005, 0.00000625, 0.000025),
+    'claude-haiku-4-5': remoteEntry(0.000001, 0.0000001, 0.00000125, 0.000005),
     'claude-3-opus-20240229': remoteEntry(0.000015, 0.0000015, 0.00001875, 0.000075),
-    'gemini-2.0-flash-exp': remoteEntry(0, 0, 0, 0),
-    'gemini-1.5-pro': remoteEntry(0.00000125, 0.0000003125, 0.0000015625, 0.000005),
-    'gemini-1.5-flash': remoteEntry(0.000000075, 0.00000001875, 0.00000009375, 0.0000003),
-    'gemini-1.5-flash-8b': remoteEntry(0.0000000375, 0.000000009375, 0.00000004687, 0.00000015)
+    'claude-3-haiku-20240307': remoteEntry(0.00000025, 0.00000003, 0.0000003, 0.00000125),
+    'gemini-2.5-pro': remoteEntry(0.00000125, 0.000000125, 0, 0.00001),
+    'gemini-2.5-flash': remoteEntry(0.0000003, 0.00000003, 0, 0.0000025),
+    'gemini-2.0-flash': remoteEntry(0.0000001, 0.000000025, 0, 0.0000004)
   })
 }
 
@@ -69,15 +68,14 @@ test('内置快照包含三个受支持模型的最近有效价格', async () =>
     'gpt-5.6-sol',
     'gpt-5.6-terra',
     'gpt-5.6-luna',
-    'claude-opus-4-8',
     'claude-sonnet-5',
-    'claude-3-5-sonnet-20241022',
-    'claude-3-5-haiku-20241022',
+    'claude-opus-4-8',
+    'claude-haiku-4-5',
     'claude-3-opus-20240229',
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-pro',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b'
+    'claude-3-haiku-20240307',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash'
   ])
 })
 

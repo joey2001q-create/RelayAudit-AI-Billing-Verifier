@@ -9,19 +9,11 @@ export const PRICING_HASH_URL = `${PRICING_REPOSITORY.replace('github.com', 'raw
 const defaultSnapshotPath = fileURLToPath(
   new URL('../../data/model-pricing.snapshot.json', import.meta.url)
 )
-const claudeModelsPath = fileURLToPath(
-  new URL('../../data/claude-models.json', import.meta.url)
-)
-const geminiModelsPath = fileURLToPath(
-  new URL('../../data/gemini-models.json', import.meta.url)
-)
 const supportedModels = [
   'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna',
-  'claude-opus-4-8', 'claude-sonnet-5',
-  'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
-  'claude-3-opus-20240229',
-  'gemini-2.0-flash-exp', 'gemini-1.5-pro',
-  'gemini-1.5-flash', 'gemini-1.5-flash-8b'
+  'claude-sonnet-5', 'claude-opus-4-8', 'claude-haiku-4-5',
+  'claude-3-opus-20240229', 'claude-3-haiku-20240307',
+  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'
 ]
 const remoteFields = {
   input: 'input_cost_per_token',
@@ -110,21 +102,7 @@ export function catalogFromSnapshot(snapshot) {
 }
 
 export async function loadPricingSnapshot(snapshotPath = defaultSnapshotPath) {
-  const gptSnapshot = JSON.parse(await readFile(snapshotPath, 'utf8'))
-  const claudeModels = JSON.parse(await readFile(claudeModelsPath, 'utf8'))
-  const geminiModels = JSON.parse(await readFile(geminiModelsPath, 'utf8'))
-
-  const combinedSnapshot = {
-    schemaVersion: 1,
-    source: gptSnapshot.source,
-    models: {
-      ...gptSnapshot.models,
-      ...claudeModels.models,
-      ...geminiModels.models
-    }
-  }
-
-  return catalogFromSnapshot(combinedSnapshot)
+  return catalogFromSnapshot(JSON.parse(await readFile(snapshotPath, 'utf8')))
 }
 
 export async function fetchRemotePricingCatalog(options = {}) {

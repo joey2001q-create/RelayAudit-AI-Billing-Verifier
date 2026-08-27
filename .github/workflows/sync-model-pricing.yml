@@ -2,7 +2,8 @@ name: 同步模型价格
 
 on:
   schedule:
-    - cron: '23 2 * * *'
+    # 每 10 分钟检查一次价格更新（避开整点，减轻服务器负担）
+    - cron: '3,13,23,33,43,53 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -27,11 +28,12 @@ jobs:
       - name: 提交价格变更
         run: |
           if git diff --quiet -- data/model-pricing.snapshot.json; then
-            echo "价格快照没有变化"
+            echo "价格快照没有变化，SHA-256 一致"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/model-pricing.snapshot.json
-          git commit -m "同步模型价格快照"
+          git commit -m "chore: 同步模型价格快照 (自动更新)"
           git push
+
