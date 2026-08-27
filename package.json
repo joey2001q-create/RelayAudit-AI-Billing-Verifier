@@ -1,0 +1,36 @@
+{
+  "name": "llm-relay-audit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RelayAudit：开源的 AI 中转站计费核验工具",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier.git"
+  },
+  "homepage": "https://relay-billing-verifier.vercel.app",
+  "bugs": {
+    "url": "https://github.com/joey2001q-create/RelayAudit-AI-Billing-Verifier/issues"
+  },
+  "keywords": [
+    "llm",
+    "ai-gateway",
+    "billing",
+    "openai-compatible"
+  ],
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev:local": "node --watch src/server.mjs",
+    "build": "node scripts/build-vercel.mjs",
+    "pricing:sync": "node scripts/sync-model-pricing.mjs",
+    "test": "node --test",
+    "check": "node --check src/server.mjs && node --check src/lib/fixture.mjs && node --check src/lib/hash.mjs && node --check src/lib/meta.mjs && node --check src/lib/network-policy.mjs && node --check src/lib/pricing.mjs && node --check src/lib/pricing-catalog.mjs && node --check src/lib/pricing-runtime.mjs && node --check src/lib/runner.mjs && node --check src/lib/usage.mjs && node --check src/lib/validation.mjs && node --check src/lib/vercel-http.mjs && node --check scripts/build-vercel.mjs && node --check scripts/sync-model-pricing.mjs && node --check api/health.mjs && node --check api/model-pricing.mjs && node --check api/benchmark.mjs && node --check api/benchmark/stream.mjs && node --check public/js/api.js && node --check public/js/app.js && node --check public/js/config-parser.js && node --check public/js/fixture-editor.js && node --check public/js/history.js && node --check public/js/presets.js && node --check public/js/progress.js && node --check public/js/report.js && node --check public/js/verification.js"
+  },
+  "dependencies": {
+    "lucide": "^0.468.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

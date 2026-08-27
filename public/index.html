@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>RelayAudit - AI 中转站计费核验器</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">RelayAudit</p>
+        <h1>AI 中转站计费核验器</h1>
+      </div>
+      <div class="privacy-status" title="托管版经 Vercel Function 转发；自部署版仅经过当前运行环境。两者均不保存 API Key，也不把 Key 写入报告"><i data-lucide="shield-check"></i><span>Key 仅用于本次测试 · 不保存</span></div>
+    </header>
+
+    <main>
+      <nav class="workflow-steps" aria-label="核验进度">
+        <div class="workflow-step active" data-workflow-step="1"><span>1</span><strong>配置接口</strong></div>
+        <div class="workflow-step" data-workflow-step="2"><span>2</span><strong>运行测试</strong></div>
+        <div class="workflow-step" data-workflow-step="3"><span>3</span><strong>填写账单与倍率</strong></div>
+        <div class="workflow-step" data-workflow-step="4"><span>4</span><strong>查看结论</strong></div>
+      </nav>
+      <form id="benchmark-form">
+        <section class="band intro-band" aria-labelledby="config-title">
+          <div class="section-heading">
+            <div><span class="step">01</span><h2 id="config-title">统一测试配置</h2></div>
+            <span id="pricing-source-status" class="pricing-source-status" data-state="loading">价格同步中…</span>
+          </div>
+          <div class="config-grid compact-config">
+            <div class="mode-field">
+              <span>核验模式</span>
+              <div class="segmented-control" role="group" aria-label="核验模式">
+                <button type="button" data-provider-mode="single" aria-pressed="true">单平台</button>
+                <button type="button" data-provider-mode="compare" aria-pressed="false">双平台对比</button>
+              </div>
+            </div>
+            <label>测试模型
+              <select id="pricing-preset">
+                <optgroup label="GPT 模型">
+                  <option value="sol">gpt-5.6-sol</option>
+                  <option value="terra">gpt-5.6-terra</option>
+                  <option value="luna">gpt-5.6-luna</option>
+                </optgroup>
+                <optgroup label="Claude 模型">
+                  <option value="claude-opus-4-8">claude-opus-4-8</option>
+                  <option value="claude-sonnet-5">claude-sonnet-5</option>
+                  <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet-20241022</option>
+                  <option value="claude-3-5-haiku-20241022">claude-3-5-haiku-20241022</option>
+                  <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
+                </optgroup>
+                <optgroup label="Gemini 模型">
+                  <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
+                  <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                  <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                  <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b</option>
+                </optgroup>
+                <option value="custom">自定义模型</option>
+              </select>
+            </label>
+            <label>测试方案
+              <select id="test-suite">
+                <option value="professional" selected>专业核验 · 3 个维度</option>
+                <option value="standard">标准核验 · 单轮稳定性</option>
+              </select>
+            </label>
+          </div>
+          <details id="pricing-details" class="advanced-details">
+            <summary><span class="summary-label"><i data-lucide="sliders-horizontal"></i><span>高级选项</span></span><i class="summary-chevron" data-lucide="chevron-down"></i></summary>
+            <div class="advanced-content">
+              <div class="advanced-settings-grid">
+                <label>语义模型标识<input id="canonical-model" name="canonicalModel" value="gpt-5.6-sol" required /></label>
+                <label>测试轮数<input id="rounds" type="number" min="1" max="5" value="3" required /></label>
+                <label>固定语料行数<input id="fixture-lines" type="number" min="20" max="2000" value="200" required /></label>
+                <label>最大输出 Token<input id="max-output-tokens" type="number" min="8" max="128" value="16" required /><small>这是输出上限，不保证恰好输出指定数量</small></label>
+              </div>
+              <div class="pricing-grid" aria-label="每百万 Token 标称价格">
+                <label>普通输入 / M<input id="price-input" type="number" min="0" step="0.001" required /></label>
+                <label>缓存读取 / M<input id="price-cached" type="number" min="0" step="0.001" required /></label>
+                <label>缓存创建 / M<input id="price-cache-create" type="number" min="0" step="0.001" required /></label>
+                <label>输出 / M<input id="price-output" type="number" min="0" step="0.001" required /></label>
+              </div>
+              <div class="fixture-customization">
+                <div class="fixture-customization-head">
+                  <div><strong>自定义测试语料</strong><span>默认使用内置固定语料</span></div>
+                  <label class="toggle-control" title="启用自定义测试语料">
+                    <input id="custom-fixture-toggle" type="checkbox" />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span class="sr-only">启用自定义测试语料</span>
+                  </label>
+                </div>
+                <div id="custom-fixture-panel" class="custom-fixture-panel" hidden>
+                  <div class="advanced-notice">
+                    <i data-lucide="info"></i>
+                    <div><strong>让输出保持稳定</strong><span>建议要求模型只返回固定格式和固定短文本，例如 <code>BILLING_TEST_OK</code>。工具会自动附加这条约束；不要要求随机生成、摘要或改写，否则输出 Token 会波动。</span></div>
+                  </div>
+                  <label>语料正文
+                    <textarea id="fixture-text" maxlength="200000" spellcheck="false" placeholder="输入用于计费核验的固定语料"></textarea>
+                  </label>
+                  <div id="fixture-stats" class="fixture-stats">0 行 · 0 字符</div>
+                </div>
+              </div>
+            </div>
+          </details>
+        </section>
+
+        <section class="band" aria-labelledby="providers-title">
+          <div class="section-heading">
+            <div><span class="step">02</span><h2 id="providers-title">平台配置</h2></div>
+            <span class="muted">倍率默认 1，平台有其他倍率时自行修改</span>
+          </div>
+          <div id="providers-grid" class="providers-grid"></div>
+        </section>
+
+        <section class="run-band" aria-label="执行测试">
+          <div id="run-summary">
+            <strong>准备发送 3 次固定请求</strong>
+            <span>输入内容固定，失败不会自动重试</span>
+          </div>
+          <button id="run-button" class="primary-button" type="submit" disabled>
+            <i data-lucide="play"></i><span>运行计费测试</span>
+          </button>
+        </section>
+        <section id="run-progress" class="run-progress" aria-live="polite" hidden>
+          <div class="progress-heading">
+            <div><span id="progress-icon" class="progress-icon"><i data-lucide="loader-circle"></i></span><div><strong id="progress-title">正在准备测试</strong><span id="progress-current">正在生成固定请求批次</span></div></div>
+            <b id="progress-count">0 / 0</b>
+          </div>
+          <progress id="progress-bar" max="1" value="0">0%</progress>
+          <div id="progress-scenarios" class="progress-scenarios"></div>
+        </section>
+      </form>
+
+      <section id="results-section" class="band results-band" aria-labelledby="results-title" hidden>
+        <div class="section-heading">
+          <div><span class="step">03</span><h2 id="results-title">计费结论</h2></div>
+          <span id="test-id" class="mono muted"></span>
+        </div>
+        <div id="result-notice" class="notice" role="status"></div>
+        <div id="results-grid" class="results-grid"></div>
+        <details class="evidence-block">
+          <summary class="evidence-title"><span class="evidence-summary-label"><i data-lucide="file-key-2"></i><strong>技术证据与执行记录</strong></span><span class="evidence-summary-meta"><span id="manifest-hash" class="mono muted"></span><i class="summary-chevron" data-lucide="chevron-down"></i></span></summary>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>测试维度</th><th>步骤</th><th>语义请求 SHA-256</th><th>平台</th><th>状态</th><th>Request ID</th><th>普通输入</th><th>缓存读取</th><th>缓存创建</th><th>输出</th></tr></thead>
+              <tbody id="calls-body"></tbody>
+            </table>
+          </div>
+        </details>
+        <div class="report-actions">
+          <button id="copy-summary" class="secondary-button" type="button"><i data-lucide="copy"></i><span>复制核验摘要</span></button>
+          <button id="export-json" class="secondary-button" type="button"><i data-lucide="file-json"></i><span>导出 JSON 证据</span></button>
+          <button id="export-html" class="secondary-button" type="button"><i data-lucide="file-down"></i><span>导出 HTML 报告</span></button>
+          <button id="print-report" class="icon-button" type="button" title="打印当前报告" aria-label="打印当前报告"><i data-lucide="printer"></i></button>
+        </div>
+      </section>
+
+      <section id="history-section" class="band history-band" aria-labelledby="history-title" hidden>
+        <div class="section-heading history-heading">
+          <div><i data-lucide="history"></i><h2 id="history-title">历史记录</h2><span id="history-count" class="muted"></span></div>
+          <button id="clear-history" class="icon-button" type="button" title="清空本机历史记录" aria-label="清空本机历史记录"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/vendor/lucide.js"></script>
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

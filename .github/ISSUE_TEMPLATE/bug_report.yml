@@ -1,0 +1,43 @@
+name: 缺陷报告
+description: 报告可复现的功能或计费核验问题
+title: "[缺陷] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: 请勿提交真实 API Key、生产接口地址或客户数据。
+  - type: input
+    id: version
+    attributes:
+      label: RelayAudit 版本
+      placeholder: 例如 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 请说明预期行为与实际行为。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 使用脱敏或模拟数据给出最小复现步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境
+      placeholder: 操作系统、Node.js 版本、浏览器
+    validations:
+      required: true
+  - type: checkboxes
+    id: sensitive
+    attributes:
+      label: 敏感信息确认
+      options:
+        - label: 我已确认内容不包含真实 API Key、生产 URL 或客户数据。
+          required: true
